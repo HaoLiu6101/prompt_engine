@@ -18,8 +18,11 @@
     "windows": [
       {
         "title": "Prompt Engine",
-        "width": 1200,
-        "height": 800
+        "width": 1280,
+        "height": 880,
+        "minWidth": 1080,
+        "minHeight": 720,
+        "center": true
       }
     ]
   }

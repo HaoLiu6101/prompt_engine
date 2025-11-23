@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 16px max(var(--page-padding), calc((100vw - var(--content-width)) / 2));
   border-bottom: 1px solid #e2e8f0;
   background: #ffffffd9;
   backdrop-filter: blur(8px);

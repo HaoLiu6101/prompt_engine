@@ -1,24 +1,26 @@
 .launcher {
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 72px);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 20% 20%, #dce7ff, transparent 30%),
-    radial-gradient(circle at 80% 30%, #ffe6d8, transparent 30%),
-    radial-gradient(circle at 50% 80%, #dff7e6, transparent 30%);
+  padding: 32px var(--page-padding) 64px;
+  background: radial-gradient(circle at 20% 20%, #dce7ff, transparent 26%),
+    radial-gradient(circle at 80% 30%, #ffe6d8, transparent 26%),
+    radial-gradient(circle at 50% 80%, #dff7e6, transparent 26%);
 }
 
 .launcher__glass {
-  width: min(720px, 90vw);
+  width: min(var(--content-width), calc(100% - var(--page-padding) * 2));
   padding: 32px;
-  background: rgba(255, 255, 255, 0.85);
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border-radius: var(--card-radius);
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
   backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .launcher__eyebrow {
