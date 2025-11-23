@@ -1,0 +1,15 @@
+{
+  "package": {
+    "productName": "Prompt Engine",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "windows": [
+      {
+        "title": "Prompt Engine",
+        "width": 1200,
+        "height": 800
+      }
+    ]
+  }
+}

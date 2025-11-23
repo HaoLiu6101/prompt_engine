@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Node/Vite/Tauri
+node_modules
+dist
+build
+*.log
+.env
+.env.*
+
+# Editor/IDE
+.idea
+.vscode
+
+# Python/venv (future backend)
+.venv
+__pycache__
+*.pyc
+
+# Rust target (for Tauri)
+target
+src-tauri/target
+src-tauri/.cargo
