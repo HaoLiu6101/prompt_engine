@@ -3,15 +3,17 @@
     "productName": "Prompt Engine",
     "version": "0.1.0"
   },
+  "build": {
+    "beforeDevCommand": "npm run build",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "../dist",
+    "distDir": "../dist"
+  },
   "tauri": {
-    "build": {
-      "beforeDevCommand": "npm run dev -- --host 0.0.0.0 --port 5173",
-      "beforeBuildCommand": "npm run build",
-      "devPath": "http://localhost:5173",
-      "distDir": "../dist"
-    },
     "bundle": {
-      "identifier": "com.example.promptengine"
+      "identifier": "com.example.promptengine",
+      "active": true,
+      "targets": ["app", "dmg"]
     },
     "windows": [
       {
