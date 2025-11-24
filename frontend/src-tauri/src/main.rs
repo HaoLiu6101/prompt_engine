@@ -81,7 +81,7 @@ fn position_spotlight_on_cursor(window: &tauri::Window) {
         }
     }
 
-    let (bounds, scale) = selected.unwrap_or_else(|| {
+    let (bounds, target_scale) = selected.unwrap_or_else(|| {
         let display = CGDisplay::new(displays[0]);
         let bounds = display.bounds();
         let scale = if bounds.size.width > 0.0 {
@@ -97,14 +97,20 @@ fn position_spotlight_on_cursor(window: &tauri::Window) {
         Err(_) => return,
     };
 
-    let window_w_points = window_size.width as f64 / scale;
-    let window_h_points = window_size.height as f64 / scale;
+    let window_scale = window.scale_factor().unwrap_or(1.0);
+    if window_scale <= 0.0 {
+        return;
+    }
 
-    let target_x_points = bounds.origin.x + ((bounds.size.width - window_w_points) / 2.0);
-    let target_y_points = bounds.origin.y + ((bounds.size.height - window_h_points) / 2.0);
+    // Convert the window size to logical points using the window's current DPI, then project
+    // into the target display's physical pixels to avoid drifting when moving across monitors.
+    let window_size_points = window_size.to_logical::<f64>(window_scale);
 
-    let target_x = (target_x_points * scale).round() as i32;
-    let target_y = (target_y_points * scale).round() as i32;
+    let target_x_points = bounds.origin.x + ((bounds.size.width - window_size_points.width) / 2.0);
+    let target_y_points = bounds.origin.y + ((bounds.size.height - window_size_points.height) / 2.0);
+
+    let target_x = (target_x_points * target_scale).round() as i32;
+    let target_y = (target_y_points * target_scale).round() as i32;
 
     let _ = window.set_position(Position::Physical(PhysicalPosition { x: target_x, y: target_y }));
 }
