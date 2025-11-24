@@ -1,7 +1,7 @@
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
 import AppRoutes from './AppRoutes';
-import Home from './Home';
+// import Home from './Home';
 
 describe('AppRoutes', () => {
   it('renders Welcome by default', () => {
