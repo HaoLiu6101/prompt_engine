@@ -163,6 +163,22 @@
   color: #bbf7d0;
 }
 
+.spotlight-window .spotlight-overlay {
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.spotlight-window .spotlight-overlay__card {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+}
+
 @keyframes spotlightFlash {
   0% {
     opacity: 0.8;

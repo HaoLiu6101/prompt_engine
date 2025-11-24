@@ -21,7 +21,7 @@ body {
 }
 
 body.spotlight-window {
-  background: rgba(7, 10, 20, 0.9);
+  background: transparent;
 }
 
 html.spotlight-window {
@@ -29,7 +29,7 @@ html.spotlight-window {
 }
 
 #root.spotlight-window {
-  background: rgba(7, 10, 20, 0.9);
+  background: transparent;
 }
 
 .app-shell {

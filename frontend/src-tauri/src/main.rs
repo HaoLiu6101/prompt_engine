@@ -8,6 +8,10 @@ use core_graphics::event::CGEvent;
 #[cfg(target_os = "macos")]
 use core_graphics::{display::CGDisplay, event_source::CGEventSourceStateID};
 #[cfg(target_os = "macos")]
+use objc::{msg_send, sel, sel_impl};
+#[cfg(target_os = "macos")]
+use objc::runtime::{Object, NO};
+#[cfg(target_os = "macos")]
 use tauri::{PhysicalPosition, Position};
 
 /// Send a text payload to the OS by pasting it, which is more reliable than
@@ -237,10 +241,24 @@ fn main() {
             .title("Prompt Engine Spotlight")
             .visible(false)
             .decorations(false)
+            .transparent(true)
             .always_on_top(true)
             .resizable(false)
             .inner_size(760.0, 520.0)
             .build()
+            .map(|window| {
+                #[cfg(target_os = "macos")]
+                unsafe {
+                    if let Ok(ns_window_ptr) = window.ns_window() {
+                        let ns_window: *mut Object = ns_window_ptr as *mut _;
+                        // Remove the native window shadow so transparent corners
+                        // around the rounded overlay don't show a square outline.
+                        let _: () = msg_send![ns_window, setHasShadow: NO];
+                    }
+                }
+
+                window
+            })
             .ok();
 
             // Global shortcut: Cmd+Option+L → show the spotlight window and focus it.
