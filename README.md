@@ -13,7 +13,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Then open the shown URL (defaults to `http://localhost:5173`). The default route is a Launcher screen; additional routes: `/home`, `/prompts`.
+Then open the shown URL (defaults to `http://localhost:5173`). The default route is a Welcome screen; additional routes: `/home`, `/prompts`.
 
 ## Tauri
 `frontend/tauri/tauri.conf.json` is a placeholder. Initialize Rust side later (e.g., `cargo tauri init`) and wire the Vite dist output.

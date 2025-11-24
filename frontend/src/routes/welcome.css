@@ -1,4 +1,4 @@
-.launcher {
+.welcome {
   min-height: calc(100vh - 72px);
   display: flex;
   align-items: center;
@@ -9,7 +9,7 @@
     radial-gradient(circle at 50% 80%, #dff7e6, transparent 26%);
 }
 
-.launcher__glass {
+.welcome__glass {
   width: min(var(--content-width), calc(100% - var(--page-padding) * 2));
   padding: 32px;
   margin: 0 auto;
@@ -23,7 +23,7 @@
   gap: 18px;
 }
 
-.launcher__eyebrow {
+.welcome__eyebrow {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -31,25 +31,25 @@
   color: #64748b;
 }
 
-.launcher__title {
+.welcome__title {
   margin: 0;
   font-size: 32px;
   color: #0f172a;
 }
 
-.launcher__subtitle {
+.welcome__subtitle {
   margin: 0;
   color: #475569;
   max-width: 560px;
 }
 
-.launcher__actions {
+.welcome__actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.launcher__meta {
+.welcome__meta {
   display: flex;
   gap: 12px;
   font-size: 13px;

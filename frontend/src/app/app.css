@@ -20,15 +20,15 @@ body {
   background: #f5f7fb;
 }
 
-body.launcher-window {
+body.spotlight-window {
   background: rgba(7, 10, 20, 0.9);
 }
 
-html.launcher-window {
+html.spotlight-window {
   background: transparent;
 }
 
-#root.launcher-window {
+#root.spotlight-window {
   background: rgba(7, 10, 20, 0.9);
 }
 

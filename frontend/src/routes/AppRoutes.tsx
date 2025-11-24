@@ -1,12 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from './Home';
-import Launcher from './Launcher';
+import Welcome from './Welcome';
 import PromptCatalog from './PromptCatalog';
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Launcher />} />
+      <Route path="/" element={<Welcome />} />
       <Route path="/prompts" element={<PromptCatalog />} />
       <Route path="/home" element={<Home />} />
     </Routes>

@@ -163,13 +163,13 @@ Constraints:
 
 ---
 
-### 3.2 Fast Launcher Flow (Ctrl+Alt+Space)
+### 3.2 Spotlight Flow (Ctrl+Alt+Space)
 
 Target: sub-3s from hotkey to prompt delivery, offline-friendly.
 
 Flow:
 1. User presses global hotkey `Ctrl+Alt+Space` (configurable).
-2. Launcher overlay appears (no mouse required):
+2. Spotlight overlay appears (no mouse required):
    - Input box focused by default.
    - List shows recent + cached prompts (approved-only unless user toggles).
 3. User types keywords:
@@ -182,7 +182,7 @@ Flow:
 5. User confirms:
    - Compose final prompt string (system prompt + filled variables).
    - Write to clipboard via Tauri; optional “Auto-paste” toggle triggers simulated `Ctrl+V`.
-6. Launcher closes and returns focus to previous app; on failure, keep overlay and show error toast.
+6. Spotlight closes and returns focus to previous app; on failure, keep overlay and show error toast.
 
 Constraints & guardrails:
 - Latency budget: open + initial results ≤ 300ms from cache; background fetch must not block typing.

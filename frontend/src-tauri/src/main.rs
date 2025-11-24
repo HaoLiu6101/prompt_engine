@@ -38,13 +38,13 @@ set the clipboard to oldClipboard
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
-            // Create a dedicated launcher window, hidden by default.
+            // Create a dedicated spotlight window, hidden by default.
             WindowBuilder::new(
                 app,
-                "launcher",
-                tauri::WindowUrl::App("index.html?window=launcher".into()),
+                "spotlight",
+                tauri::WindowUrl::App("index.html?window=spotlight".into()),
             )
-            .title("Prompt Engine Launcher")
+            .title("Prompt Engine Spotlight")
             .visible(false)
             .decorations(false)
             .always_on_top(true)
@@ -53,7 +53,7 @@ fn main() {
             .build()
             .ok();
 
-            // Global shortcut: Cmd+Option+L → show launcher window and notify frontend.
+            // Global shortcut: Cmd+Option+L → show the spotlight window and focus it.
             // Keep the handler minimal to avoid prior accelerator issues.
             #[cfg(target_os = "macos")]
             {
@@ -61,10 +61,10 @@ fn main() {
                 let mut shortcuts = app.global_shortcut_manager();
                 shortcuts
                     .register("Command+Option+L", move || {
-                        if let Some(window) = handle.get_window("launcher") {
+                        if let Some(window) = handle.get_window("spotlight") {
                             let _ = window.show();
                             let _ = window.set_focus();
-                            let _ = handle.emit_all("show-spotlight", ());
+                            let _ = window.emit("show-spotlight", ());
                         }
                     })
                     .map_err(|e| e)?;

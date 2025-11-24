@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { listen } from '@tauri-apps/api/event';
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrent, WebviewWindow } from '@tauri-apps/api/window';
 import { HashRouter } from 'react-router-dom';
 import AppRoutes from '../routes/AppRoutes';
 import TopNav from '../components/TopNav';
-import LauncherOverlay from '../features/launcher/LauncherOverlay';
+import SpotlightOverlay from '../features/spotlight/SpotlightOverlay';
 import './app.css';
 
 function App() {
@@ -13,13 +12,14 @@ function App() {
     []
   );
   const [windowLabel, setWindowLabel] = useState<string | null>(null);
-  const isLauncherQuery = new URLSearchParams(window.location.search).get('window') === 'launcher';
-  const [launcherOpen, setLauncherOpen] = useState(false);
+  const isSpotlightQuery = new URLSearchParams(window.location.search).get('window') === 'spotlight';
+  const [spotlightOpen, setSpotlightOpen] = useState(false);
+  const isSpotlightWindow = windowLabel === 'spotlight' || isSpotlightQuery;
 
-  const openLauncher = useCallback(() => setLauncherOpen(true), []);
-  const closeLauncher = useCallback(() => setLauncherOpen(false), []);
+  const openSpotlight = useCallback(() => setSpotlightOpen(true), []);
+  const closeSpotlight = useCallback(() => setSpotlightOpen(false), []);
 
-  // Detect if this is the dedicated launcher window.
+  // Detect if this is the dedicated spotlight window.
   useEffect(() => {
     if (!isTauri) {
       setWindowLabel('main');
@@ -34,67 +34,63 @@ function App() {
   }, [isTauri]);
 
   useEffect(() => {
-    const isLauncherWindow = windowLabel === 'launcher' || isLauncherQuery;
-    if (isLauncherWindow) {
-      document.body.classList.add('launcher-window');
-      document.documentElement.classList.add('launcher-window');
-      document.getElementById('root')?.classList.add('launcher-window');
+    if (isSpotlightWindow) {
+      document.body.classList.add('spotlight-window');
+      document.documentElement.classList.add('spotlight-window');
+      document.getElementById('root')?.classList.add('spotlight-window');
     } else {
-      document.body.classList.remove('launcher-window');
-      document.documentElement.classList.remove('launcher-window');
-      document.getElementById('root')?.classList.remove('launcher-window');
+      document.body.classList.remove('spotlight-window');
+      document.documentElement.classList.remove('spotlight-window');
+      document.getElementById('root')?.classList.remove('spotlight-window');
     }
     return () => {
-      document.body.classList.remove('launcher-window');
-      document.documentElement.classList.remove('launcher-window');
-      document.getElementById('root')?.classList.remove('launcher-window');
+      document.body.classList.remove('spotlight-window');
+      document.documentElement.classList.remove('spotlight-window');
+      document.getElementById('root')?.classList.remove('spotlight-window');
     };
-  }, [windowLabel]);
-
-  // Listen for native global shortcut event emitted from Tauri (Cmd+Option+L).
-  useEffect(() => {
-    let unlisten: (() => void) | undefined;
-    if (isTauri) {
-      listen('show-spotlight', () => openLauncher())
-        .then((fn) => {
-          unlisten = fn;
-        })
-        .catch(() => {
-          // Ignore if tauri event system not available in web preview
-        });
-    }
-    return () => {
-      if (unlisten) unlisten();
-    };
-  }, [openLauncher, isTauri]);
+  }, [isSpotlightWindow]);
 
   useEffect(() => {
     const handleHotkey = (event: KeyboardEvent) => {
-      const isLauncherCombo =
+      const isSpotlightCombo =
         event.metaKey && event.altKey && (event.code === 'KeyL' || event.key.toLowerCase() === 'l');
-      if (isLauncherCombo) {
-        event.preventDefault();
-        openLauncher();
+      if (!isSpotlightCombo) return;
+
+      event.preventDefault();
+
+      if (isTauri) {
+        if (isSpotlightWindow) return;
+
+        const spotlightWindow = WebviewWindow.getByLabel('spotlight');
+        if (spotlightWindow) {
+          spotlightWindow.show();
+          spotlightWindow.setFocus();
+          return;
+        }
+
+        // Fallback: open inline overlay if dedicated window is unavailable.
+        openSpotlight();
+        return;
       }
+
+      openSpotlight();
     };
 
     window.addEventListener('keydown', handleHotkey);
     return () => window.removeEventListener('keydown', handleHotkey);
-  }, [openLauncher]);
+  }, [openSpotlight, isTauri, isSpotlightWindow]);
 
-  // In the launcher window, render only the overlay and hide the shell.
-  const isLauncherWindow = windowLabel === 'launcher' || isLauncherQuery;
-
-  if (isLauncherWindow) {
+  // In the spotlight window, render only the overlay and hide the shell.
+  if (isSpotlightWindow) {
     return (
-      <LauncherOverlay
+      <SpotlightOverlay
         open
         onClose={() => {
           // Hide the window when closing the overlay
           if (isTauri) {
             getCurrent().hide();
           } else {
-            setLauncherOpen(false);
+            setSpotlightOpen(false);
           }
         }}
       />
@@ -108,7 +104,7 @@ function App() {
         <main className="app-content">
           <AppRoutes />
         </main>
-        <LauncherOverlay open={launcherOpen} onClose={closeLauncher} />
+        <SpotlightOverlay open={spotlightOpen} onClose={closeSpotlight} />
       </div>
     </HashRouter>
   );

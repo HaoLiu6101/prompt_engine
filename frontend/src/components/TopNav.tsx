@@ -9,7 +9,7 @@ function TopNav() {
       </Link>
       <nav className="nav-links">
         <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
-          Launcher
+          Welcome
         </NavLink>
         <NavLink to="/home" className={({ isActive }) => (isActive ? 'active' : '')}>
           Home
