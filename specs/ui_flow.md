@@ -163,6 +163,41 @@ Constraints:
 
 ---
 
+### 3.2 Fast Launcher Flow (Ctrl+Alt+Space)
+
+Target: sub-3s from hotkey to prompt delivery, offline-friendly.
+
+Flow:
+1. User presses global hotkey `Ctrl+Alt+Space` (configurable).
+2. Launcher overlay appears (no mouse required):
+   - Input box focused by default.
+   - List shows recent + cached prompts (approved-only unless user toggles).
+3. User types keywords:
+   - Primary search hits local cache immediately (name/description/tags/content snippets).
+   - If cache miss and online: background fetch to refresh list; show “syncing…” hint.
+   - If offline: keep cache-only results; show offline badge.
+4. User selects a prompt:
+   - If prompt has no variables → instantly compose final string → write to clipboard.
+   - If prompt has variables → show inline form for required fields (keyboard-first).
+5. User confirms:
+   - Compose final prompt string (system prompt + filled variables).
+   - Write to clipboard via Tauri; optional “Auto-paste” toggle triggers simulated `Ctrl+V`.
+6. Launcher closes and returns focus to previous app; on failure, keep overlay and show error toast.
+
+Constraints & guardrails:
+- Latency budget: open + initial results ≤ 300ms from cache; background fetch must not block typing.
+- Security: clipboard write and keystroke simulation require explicit user opt-in; persist preference.
+- Governance: default to approved versions; if draft/experimental selected, surface warning chip.
+- Accessibility: full keyboard navigation (arrow/enter), escape to close, screen-reader labels for controls.
+
+States to handle:
+- Empty results: show guidance to open full Library or clear filters.
+- Partially filled variables: block submit with inline validation hints.
+- Sync failure: degrade gracefully to cache, show retry.
+
+Instrumentation:
+- Log hotkey opens, search latency, cache hits/misses, clipboard success/fail, auto-paste usage.
+
 ## 4. UX Principles
 
 - Default to **approved** prompts for safety and consistency.
@@ -172,4 +207,3 @@ Constraints:
   - All core flows ≤ 3 clicks + minimal input.
 - Avoid overwhelming non-technical users:
   - Hide complex schema details by default with “Advanced” sections.
-
