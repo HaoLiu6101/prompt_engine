@@ -20,9 +20,17 @@ npm run dev
 Then open the shown URL (defaults to `http://localhost:5173`) or use the spawned desktop window. The default route is a Welcome screen; additional routes: `/home`, `/prompts`.
 
 Spotlight:
-- Press `Cmd+Option+L` (macOS) to open the Spotlight window, centered on the monitor under the cursor.
-- Type to search the local library (SQLite via Rust); seeded items are stored under the app data directory.
-- Press `Enter` to copy the selected prompt/snippet to your clipboard; paste manually with `Cmd+V`.
+- Press `Cmd+Option+L` (macOS) to open the Spotlight window, centered on the monitor under the cursor. If the dedicated Tauri window is unavailable, the inline overlay opens instead.
+- Type to search the local library (SQLite via Rust IPC `search_library`), merged with in-memory fallback data so web mode still works.
+- Navigate results with Arrow keys or click; Esc closes. Dev builds auto-open devtools for the spotlight window.
+- Press `Enter` or use "Copy & close" to copy the selected prompt/snippet; clipboard uses Tauri in desktop mode and the browser Clipboard API on the web.
+
+Spotlight flows (intended behavior):
+- Activation: macOS global shortcut `Cmd+Option+L` triggers `reposition_spotlight` and shows the spotlight window; web-only mode relies on the inline overlay.
+- Query + search: 220ms debounced search that preserves the last query when reopening so you can refine results; empty query shows recents.
+- Selection: Arrow keys move the active row; clicking a row previews it and updates the active item.
+- Copy + close: Enter copies the active item, flashes feedback, and closes after success; errors surface inline and keep focus on the input.
+- Close: Esc (capture listener) or clicking the backdrop hides the overlay/window without touching the host shell.
 
 ## Tauri
 Config lives at `frontend/src-tauri/tauri.conf.json`. The Rust host already wires IPC commands for library search/reseed and clipboard handling; macOS-only text insertion uses AppleScript and requires Accessibility permission if enabled later.
@@ -30,7 +38,7 @@ Config lives at `frontend/src-tauri/tauri.conf.json`. The Rust host already wire
 ## Coding standards
 - React + TypeScript, Vite.
 - Zustand for client state, React Router for navigation.
-- Lint via `npm run lint` (ESLint + TypeScript).
+- Lint via `npm run lint` (ESLint with TypeScript + React Hooks; import plugin is available if we later enable its rules).
 
 ## Next steps
 - Implement backend (FastAPI + Postgres) per `specs/`.
