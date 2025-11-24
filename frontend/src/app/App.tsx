@@ -66,7 +66,7 @@ function App() {
       document.documentElement.classList.remove('spotlight-window');
       document.getElementById('root')?.classList.remove('spotlight-window');
     };
-  }, [isSpotlightWindow]);
+  }, [isSpotlightWindow, isTauri]);
 
   useEffect(() => {
     const handleHotkey = (event: KeyboardEvent) => {
