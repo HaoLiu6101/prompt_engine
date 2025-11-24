@@ -1,7 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::process::Command;
+use std::{io, process::Command};
 use tauri::{window::WindowBuilder, GlobalShortcutManager, Manager};
+
+mod library;
 
 #[cfg(target_os = "macos")]
 use core_graphics::event::CGEvent;
@@ -232,6 +234,10 @@ fn reposition_spotlight(app: tauri::AppHandle) -> Result<(), String> {
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
+            let library = library::Library::initialize(&app.handle())
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+            app.manage(library);
+
             // Create a dedicated spotlight window, hidden by default.
             WindowBuilder::new(
                 app,
@@ -241,7 +247,7 @@ fn main() {
             .title("Prompt Engine Spotlight")
             .visible(false)
             .decorations(false)
-            .transparent(true)
+            .transparent(true)CREATE VIRTUAL TABLE docs USING fts5(title, body); INSERT INTO docs (title, body) VALUES ('Test', 'Hello world'); SELECT * FROM docs WHERE docs MATCH 'hello';
             .always_on_top(true)
             .resizable(false)
             .inner_size(760.0, 520.0)
@@ -281,7 +287,13 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![type_text, reposition_spotlight])
+        .invoke_handler(tauri::generate_handler![
+            type_text,
+            reposition_spotlight,
+            library::search_library,
+            library::list_library,
+            library::reseed_library
+        ])
         .run(tauri::generate_context!())
         .expect("error while running Prompt Engine");
 }

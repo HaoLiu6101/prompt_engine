@@ -1,11 +1,12 @@
-import { writeText } from '@tauri-apps/api/clipboard';
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
+import { copyToClipboard, searchLibrary, type LibraryItem } from '../../services/libraryClient';
 import './spotlight-overlay.css';
 
 type SpotlightOverlayProps = {
@@ -18,9 +19,6 @@ type InsertState = {
   message?: string;
 };
 
-const DEFAULT_PROMPT = 'hello from prompt engine';
-const isTauriEnv = () =>
-  typeof window !== 'undefined' && (('__TAURI_IPC__' in window) || ('__TAURI_INTERNALS__' in window));
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
@@ -29,6 +27,10 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
   const [insertState, setInsertState] = useState<InsertState>({ status: 'idle' });
   const [isInserting, setIsInserting] = useState(false);
   const [showCopyFlash, setShowCopyFlash] = useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<LibraryItem[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(
     () => () => {
@@ -41,15 +43,6 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
     (event: KeyboardEvent | ReactKeyboardEvent<HTMLElement>) => {
       const isEscape = event.key === 'Escape' || event.key === 'Esc' || event.code === 'Escape';
       if (!isEscape) return;
-
-      if (import.meta.env.DEV) {
-        console.log('[spotlight overlay] escape pressed', {
-          key: event.key,
-          code: event.code,
-          target: (event.target as HTMLElement)?.tagName,
-        });
-      }
-
       event.preventDefault();
       event.stopPropagation();
       onClose();
@@ -57,60 +50,89 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
     [onClose]
   );
 
-  const handleInsert = useCallback(async () => {
-    if (!open || isInserting) return;
+  const selectedItem = useMemo(() => {
+    if (!results.length) return null;
+    return results.find((item) => item.id === selectedId) ?? results[0];
+  }, [results, selectedId]);
 
-    if (!isTauriEnv()) {
-      setInsertState({
-        status: 'error',
-        message: 'Insert is available in the Prompt Engine desktop app.',
-      });
-      return;
-    }
+  const runSearch = useCallback(
+    async (term: string) => {
+      setIsLoading(true);
+      try {
+        const items = await searchLibrary(term);
+        if (!mountedRef.current) return;
+        setResults(items);
+        if (!items.length) {
+          setSelectedId(null);
+        } else if (!selectedId || !items.some((item) => item.id === selectedId)) {
+          setSelectedId(items[0].id);
+        }
+      } catch (error) {
+        console.error('[spotlight] search failed', error);
+        if (mountedRef.current) {
+          setInsertState({
+            status: 'error',
+            message: 'Search failed, showing cached results.',
+          });
+        }
+      } finally {
+        if (mountedRef.current) setIsLoading(false);
+      }
+    },
+    [selectedId]
+  );
+
+  const handleInsert = useCallback(async () => {
+    const item = selectedItem ?? results[0];
+    if (!open || isInserting || !item) return;
 
     setIsInserting(true);
-    setInsertState({ status: 'idle', message: 'Copying prompt to clipboard…' });
+    setInsertState({ status: 'idle', message: `Copying "${item.title}"…` });
     setShowCopyFlash(true);
     setTimeout(() => {
       if (mountedRef.current) setShowCopyFlash(false);
     }, 520);
 
     try {
-      await writeText(DEFAULT_PROMPT);
+      await copyToClipboard(item.body);
       if (mountedRef.current) {
         setInsertState({
           status: 'success',
-          message: 'Copied to clipboard. Press Cmd+V to paste anywhere.',
+          message: `Copied "${item.title}" to clipboard. Paste with Cmd+V.`,
         });
       }
-      await sleep(480);
-      if (mountedRef.current) {
-        onClose();
-      }
+      await sleep(360);
+      if (mountedRef.current) onClose();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-
       if (mountedRef.current) {
         setInsertState({
           status: 'error',
-          message: message || 'Unable to copy the prompt. Please try again.',
+          message: message || 'Unable to copy. Try again.',
         });
         setTimeout(() => inputRef.current?.focus(), 50);
       }
-      return;
     } finally {
       if (mountedRef.current) {
         setIsInserting(false);
       }
     }
-  }, [isInserting, onClose, open]);
+  }, [isInserting, onClose, open, results, selectedItem]);
 
   useEffect(() => {
     if (open) {
       setInsertState({ status: 'idle' });
-      inputRef.current?.focus();
+      setQuery('');
+      runSearch('');
+      setTimeout(() => inputRef.current?.focus(), 40);
     }
-  }, [open]);
+  }, [open, runSearch]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const timer = setTimeout(() => runSearch(query), 220);
+    return () => clearTimeout(timer);
+  }, [open, query, runSearch]);
 
   useEffect(() => {
     const resetState = () => setInsertState({ status: 'idle' });
@@ -134,9 +156,24 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
 
   const handleInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     const isEnter = event.key === 'Enter' && !event.metaKey && !event.altKey && !event.ctrlKey;
-    if (!isEnter) return;
-    event.preventDefault();
-    handleInsert();
+    const isArrowDown = event.key === 'ArrowDown';
+    const isArrowUp = event.key === 'ArrowUp';
+
+    if (isEnter) {
+      event.preventDefault();
+      handleInsert();
+      return;
+    }
+
+    if (isArrowDown || isArrowUp) {
+      event.preventDefault();
+      if (!results.length) return;
+      const currentIndex = results.findIndex((item) => item.id === (selectedItem?.id ?? ''));
+      const nextIndex = isArrowDown
+        ? Math.min(results.length - 1, (currentIndex < 0 ? 0 : currentIndex + 1))
+        : Math.max(0, (currentIndex < 0 ? 0 : currentIndex - 1));
+      setSelectedId(results[nextIndex].id);
+    }
   };
 
   return (
@@ -159,49 +196,115 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
             <p className="spotlight-overlay__eyebrow">Prompt Engine</p>
             <h2 className="spotlight-overlay__title">Spotlight</h2>
             <p className="spotlight-overlay__hint">
-              Press Enter to copy the default prompt. Paste it anywhere with Cmd+V.
+              Search your library, preview a prompt, then press Enter to copy and close.
             </p>
           </div>
-          <button className="spotlight-overlay__close" type="button" onClick={onClose} aria-label="Close">
-            Esc
-          </button>
+          <div className="spotlight-overlay__header-actions">
+            <span className="spotlight-overlay__pill">Local library</span>
+            <button className="spotlight-overlay__close" type="button" onClick={onClose} aria-label="Close">
+              Esc
+            </button>
+          </div>
         </header>
 
         <div className="spotlight-overlay__search">
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Press Enter to copy the default prompt to your clipboard"
-            aria-label="Insert prompt"
-            onKeyDown={handleInputKeyDown}
-            disabled={isInserting}
-          />
+          <div className="spotlight-overlay__search-input">
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Search prompts, snippets, FAQs…"
+              aria-label="Search library"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+              disabled={isInserting}
+            />
+            {query ? <span className="spotlight-overlay__badge">Enter to copy</span> : <span className="spotlight-overlay__badge">Showing recent</span>}
+          </div>
           <div className="spotlight-overlay__kbd">Cmd+Alt+L</div>
         </div>
-        <p className="spotlight-overlay__input-hint">
-          Hit Enter to copy, then paste with Cmd+V in your target app.
-        </p>
 
-        <div className="spotlight-overlay__results">
-          <div className="spotlight-overlay__empty">
-            <p className="spotlight-overlay__empty-title">Insert v0 is ready</p>
-            <p className="spotlight-overlay__empty-copy">
-              Hit Enter to copy the default prompt to your clipboard, then paste where you need it.
-            </p>
-            <div className="spotlight-overlay__prompt-preview" aria-label="Default prompt">
-              "{DEFAULT_PROMPT}"
-            </div>
-            <p className="spotlight-overlay__empty-copy">
-              After it copies, the spotlight will close automatically so you can paste immediately.
-            </p>
-            {insertState.status === 'error' && (
-              <div className="spotlight-overlay__status spotlight-overlay__status--error" role="alert">
-                {insertState.message}
+        <div className="spotlight-overlay__body">
+          <div className="spotlight-overlay__results-pane">
+            {isLoading && <div className="spotlight-overlay__loading">Searching…</div>}
+            {!isLoading && results.length === 0 && (
+              <div className="spotlight-overlay__empty">
+                <p className="spotlight-overlay__empty-title">No matches yet</p>
+                <p className="spotlight-overlay__empty-copy">Try another keyword or reset the query.</p>
               </div>
             )}
-            {insertState.status === 'success' && (
-              <div className="spotlight-overlay__status spotlight-overlay__status--success" role="status">
-                {insertState.message}
+            {!isLoading && results.length > 0 && (
+              <ul className="spotlight-overlay__list" role="listbox" aria-label="Search results">
+                {results.map((item) => {
+                  const isActive = selectedItem?.id === item.id;
+                  return (
+                    <li
+                      key={item.id}
+                      className={`spotlight-overlay__list-item${isActive ? ' is-active' : ''}`}
+                      role="option"
+                      aria-selected={isActive}
+                      onClick={() => setSelectedId(item.id)}
+                    >
+                      <div className="spotlight-overlay__list-row">
+                        <span className="spotlight-overlay__list-title">{item.title}</span>
+                        <span className="spotlight-overlay__pill muted">{item.item_type}</span>
+                      </div>
+                      <p className="spotlight-overlay__list-snippet">
+                        {item.body.slice(0, 160)}
+                        {item.body.length > 160 ? '…' : ''}
+                      </p>
+                      <div className="spotlight-overlay__tags">
+                        {item.tags.map((tag) => (
+                          <span key={tag} className="spotlight-overlay__tag">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className="spotlight-overlay__preview">
+            {selectedItem ? (
+              <>
+                <div className="spotlight-overlay__preview-header">
+                  <div>
+                    <p className="spotlight-overlay__eyebrow">Preview</p>
+                    <h3 className="spotlight-overlay__preview-title">{selectedItem.title}</h3>
+                    <div className="spotlight-overlay__tags">
+                      <span className="spotlight-overlay__tag prominent">{selectedItem.item_type}</span>
+                      {selectedItem.tags.map((tag) => (
+                        <span key={tag} className="spotlight-overlay__tag">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <button className="spotlight-overlay__action" type="button" onClick={handleInsert} disabled={isInserting}>
+                    {isInserting ? 'Copying…' : 'Copy & close'}
+                  </button>
+                </div>
+                <div className="spotlight-overlay__preview-body" aria-label="Prompt body">
+                  {selectedItem.body}
+                </div>
+                {insertState.status === 'error' && (
+                  <div className="spotlight-overlay__status spotlight-overlay__status--error" role="alert">
+                    {insertState.message}
+                  </div>
+                )}
+                {insertState.status === 'success' && (
+                  <div className="spotlight-overlay__status spotlight-overlay__status--success" role="status">
+                    {insertState.message}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="spotlight-overlay__empty">
+                <p className="spotlight-overlay__empty-title">Select a result to preview</p>
+                <p className="spotlight-overlay__empty-copy">Enter copies the highlighted item to your clipboard.</p>
               </div>
             )}
           </div>
