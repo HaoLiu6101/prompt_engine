@@ -187,6 +187,7 @@ Flow:
 Constraints & guardrails:
 - Latency budget: open + initial results ≤ 300ms from cache; background fetch must not block typing.
 - Platform coverage: global shortcut currently registered only on macOS; other OS use the in-app handler until native global binding is added.
+- Multi-monitor: spotlight centers on the monitor where the cursor sits when invoked; if detection fails, fall back to the primary display.
 - Security: clipboard write and keystroke simulation (Cmd+V via AppleScript on macOS) require explicit user opt-in; persist preference.
 - Governance: default to approved versions; if draft/experimental selected, surface warning chip.
 - Accessibility: full keyboard navigation (arrow/enter), escape to close, screen-reader labels for controls.

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getCurrent, WebviewWindow } from '@tauri-apps/api/window';
+import { invoke } from '@tauri-apps/api/tauri';
 import { HashRouter } from 'react-router-dom';
 import AppRoutes from '../routes/AppRoutes';
 import TopNav from '../components/TopNav';
@@ -80,6 +81,12 @@ function App() {
 
         const spotlightWindow = WebviewWindow.getByLabel('spotlight');
         if (spotlightWindow) {
+          invoke('reposition_spotlight').catch(() => {
+            if (import.meta.env.DEV) {
+              console.warn('[spotlight] failed to reposition window');
+            }
+          });
+
           spotlightWindow.show();
           spotlightWindow.setFocus();
           return;
