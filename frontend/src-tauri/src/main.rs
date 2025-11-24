@@ -247,7 +247,7 @@ fn main() {
             .title("Prompt Engine Spotlight")
             .visible(false)
             .decorations(false)
-            .transparent(true)CREATE VIRTUAL TABLE docs USING fts5(title, body); INSERT INTO docs (title, body) VALUES ('Test', 'Hello world'); SELECT * FROM docs WHERE docs MATCH 'hello';
+            .transparent(true)
             .always_on_top(true)
             .resizable(false)
             .inner_size(760.0, 520.0)
