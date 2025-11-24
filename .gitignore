@@ -5,6 +5,8 @@
 node_modules
 dist
 build
+coverage
+frontend/coverage
 *.log
 .env
 .env.*
