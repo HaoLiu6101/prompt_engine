@@ -1,9 +1,9 @@
 # Prompt Engine
 
-Internal platform for authoring, approving, and consuming reusable prompts. Current status: frontend scaffold (React + Vite, Tauri shell placeholder), architecture and data model specs, backend not yet implemented.
+Internal platform for authoring, approving, and consuming reusable prompts. Current status: desktop spotlight prototype (React + Vite + Tauri/Rust with a local SQLite library and global shortcut on macOS), architecture/data model specs, backend not yet implemented.
 
 ## Structure
-- `frontend/`: React + TypeScript + Vite app scaffolded for Tauri.
+- `frontend/`: React + TypeScript + Vite desktop app with a Tauri host in `src-tauri/` (Rust). The host seeds and queries a local SQLite library, exposes IPC commands, and registers a macOS global shortcut for the Spotlight window.
 - `specs/`: Architecture, data models, and placeholders for API/flows.
 - `backend/`: Empty placeholder for FastAPI backend.
 
@@ -11,12 +11,21 @@ Internal platform for authoring, approving, and consuming reusable prompts. Curr
 ```bash
 cd frontend
 npm install
+# Desktop (Tauri) with global shortcut + local library
+npm run tauri dev
+
+# Web-only fallback (no global shortcut; uses in-memory fallback items)
 npm run dev
 ```
-Then open the shown URL (defaults to `http://localhost:5173`). The default route is a Welcome screen; additional routes: `/home`, `/prompts`.
+Then open the shown URL (defaults to `http://localhost:5173`) or use the spawned desktop window. The default route is a Welcome screen; additional routes: `/home`, `/prompts`.
+
+Spotlight:
+- Press `Cmd+Option+L` (macOS) to open the Spotlight window, centered on the monitor under the cursor.
+- Type to search the local library (SQLite via Rust); seeded items are stored under the app data directory.
+- Press `Enter` to copy the selected prompt/snippet to your clipboard; paste manually with `Cmd+V`.
 
 ## Tauri
-`frontend/tauri/tauri.conf.json` is a placeholder. Initialize Rust side later (e.g., `cargo tauri init`) and wire the Vite dist output.
+Config lives at `frontend/src-tauri/tauri.conf.json`. The Rust host already wires IPC commands for library search/reseed and clipboard handling; macOS-only text insertion uses AppleScript and requires Accessibility permission if enabled later.
 
 ## Coding standards
 - React + TypeScript, Vite.
