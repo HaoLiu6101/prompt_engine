@@ -24,6 +24,8 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const mountedRef = useRef(true);
+  const searchTokenRef = useRef(0);
+  const initializedRef = useRef(false);
   const [insertState, setInsertState] = useState<InsertState>({ status: 'idle' });
   const [isInserting, setIsInserting] = useState(false);
   const [showCopyFlash, setShowCopyFlash] = useState(false);
@@ -57,10 +59,11 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
 
   const runSearch = useCallback(
     async (term: string) => {
+      const token = ++searchTokenRef.current;
       setIsLoading(true);
       try {
         const items = await searchLibrary(term);
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || token !== searchTokenRef.current) return;
         setResults(items);
         if (!items.length) {
           setSelectedId(null);
@@ -122,11 +125,15 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
   useEffect(() => {
     if (open) {
       setInsertState({ status: 'idle' });
-      setQuery('');
-      runSearch('');
+      // Do not reset user query when reopening; reuse existing query to avoid clearing input.
+      const nextQuery = query;
+      runSearch(nextQuery);
+      initializedRef.current = true;
       setTimeout(() => inputRef.current?.focus(), 40);
+    } else {
+      initializedRef.current = false;
     }
-  }, [open, runSearch]);
+  }, [open, query, runSearch]);
 
   useEffect(() => {
     if (!open) return undefined;
