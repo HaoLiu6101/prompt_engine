@@ -18,6 +18,10 @@
         "hide": true,
         "show": true,
         "setFocus": true
+      },
+      "clipboard": {
+        "all": false,
+        "writeText": true
       }
     },
     "bundle": {

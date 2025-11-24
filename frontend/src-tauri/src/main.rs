@@ -12,34 +12,131 @@ use tauri::{PhysicalPosition, Position};
 
 /// Send a text payload to the OS by pasting it, which is more reliable than
 /// keystroking each character when modifiers (like Shift) were just pressed.
-/// macOS requires Accessibility permission for the keystroke.
+/// macOS requires Accessibility permission for the keystroke. Includes guardrails
+/// to ensure a text cursor exists before attempting to paste.
 #[tauri::command]
 fn type_text(text: String) -> Result<(), String> {
-    let escaped = text.replace('\\', "\\\\").replace('"', "\\\"");
-    let script = format!(
-        r#"
-set oldClipboard to the clipboard
-set the clipboard to "{}"
-delay 0.05
-tell application "System Events" to keystroke "v" using {{command down}}
-delay 0.05
-set the clipboard to oldClipboard
-"#,
-        escaped
-    );
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = text;
+        return Err("Insert is only supported on macOS right now.".into());
+    }
 
-    Command::new("osascript")
-        .arg("-e")
-        .arg(script)
-        .status()
-        .map_err(|e| e.to_string())
-        .and_then(|status| {
-            if status.success() {
-                Ok(())
+    #[cfg(target_os = "macos")]
+    {
+        if text.trim().is_empty() {
+            return Err("No text provided to insert.".into());
+        }
+
+        let script = r#"on run argv
+    if (count of argv) is 0 then
+        return "ERROR:MissingText"
+    end if
+
+    set textToInsert to item 1 of argv
+    tell application "System Events"
+        if not (UI elements enabled) then
+            return "ERROR:UIAccessDisabled"
+        end if
+    end tell
+
+    set targetAppName to "Prompt Engine"
+    set timeoutDate to (current date) + 1
+    repeat
+        tell application "System Events"
+            set frontApp to first process whose frontmost is true
+            set frontAppName to name of frontApp
+        end tell
+
+        if frontAppName is not targetAppName then
+            exit repeat
+        end if
+
+        if (current date) > timeoutDate then
+            return "ERROR:PromptEngineFocused"
+        end if
+        delay 0.05
+    end repeat
+
+    tell application "System Events"
+        try
+            set focusedElement to value of attribute "AXFocusedUIElement" of frontApp
+        on error errMsg
+            return "ERROR:FocusLookupFailed|" & errMsg
+        end try
+    end tell
+
+    if focusedElement is missing value then
+        return "ERROR:NoFocusedElement"
+    end if
+
+    set oldClipboard to the clipboard
+    set the clipboard to textToInsert
+    delay 0.06
+    try
+        tell application "System Events" to keystroke "v" using {command down}
+    on error errMsg
+        set the clipboard to oldClipboard
+        return "ERROR:PasteFailed|" & errMsg
+    end try
+    delay 0.06
+    set the clipboard to oldClipboard
+    return "OK:" & frontAppName
+end run"#;
+
+        let output = Command::new("osascript")
+            .args(["-l", "AppleScript", "-e", script, &text])
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        if !output.status.success() {
+            let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            let message = if !stdout.is_empty() {
+                stdout
+            } else if !stderr.is_empty() {
+                stderr
             } else {
-                Err("osascript exited with error".into())
-            }
-        })
+                "osascript exited with error".into()
+            };
+
+            return Err(message);
+        }
+
+        let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+
+        if stdout.starts_with("OK:") {
+            return Ok(());
+        }
+
+        if let Some(rest) = stdout.strip_prefix("ERROR:") {
+            let message = match rest {
+                code if code.starts_with("UIAccessDisabled") => {
+                    "Enable accessibility permissions for Prompt Engine to insert text.".to_string()
+                }
+                code if code.starts_with("PromptEngineFocused") => {
+                    "Place the cursor in the app where you want to insert, then try again.".to_string()
+                }
+                code if code.starts_with("NoFocusedElement") => {
+                    "No text cursor detected. Click into a text field and try again.".to_string()
+                }
+                code if code.starts_with("PasteFailed") => format!(
+                    "Failed to paste using the clipboard: {}",
+                    code.trim_start_matches("PasteFailed|")
+                ),
+                code if code.starts_with("FocusLookupFailed") => format!(
+                    "Could not inspect the focused element: {}",
+                    code.trim_start_matches("FocusLookupFailed|")
+                ),
+                code if code.starts_with("MissingText") => "No text provided to insert.".to_string(),
+                other => other.to_string(),
+            };
+
+            return Err(message);
+        }
+
+        Err("Unexpected response from clipboard insert.".into())
+    }
 }
 
 /// Move the spotlight window to the monitor under the current cursor and center it.
