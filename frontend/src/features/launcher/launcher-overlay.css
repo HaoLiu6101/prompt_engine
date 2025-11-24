@@ -1,0 +1,114 @@
+.launcher-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 12, 34, 0.52);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  z-index: 9999;
+}
+
+.launcher-overlay__card {
+  width: min(720px, 100%);
+  background: #0b1224;
+  color: #e2e8f0;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+  padding: 20px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.launcher-overlay__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.launcher-overlay__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.launcher-overlay__title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.launcher-overlay__hint {
+  margin: 4px 0 0;
+  color: #cbd5e1;
+}
+
+.launcher-overlay__close {
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.launcher-overlay__search {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px 8px 14px;
+  gap: 10px;
+}
+
+.launcher-overlay__search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  font-size: 16px;
+  outline: none;
+}
+
+.launcher-overlay__kbd {
+  font-size: 12px;
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.launcher-overlay__results {
+  min-height: 180px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.launcher-overlay__empty {
+  text-align: center;
+  max-width: 420px;
+}
+
+.launcher-overlay__empty-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: #e2e8f0;
+}
+
+.launcher-overlay__empty-copy {
+  margin: 0;
+  color: #cbd5e1;
+}

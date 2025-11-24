@@ -1,13 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::process::Command;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Duration;
-use std::thread;
-use tauri::{GlobalShortcutManager, Manager};
-
-// Throttle shortcut handling so holding the keys doesn't spam.
-static SHORTCUT_BUSY: AtomicBool = AtomicBool::new(false);
+use tauri::{window::WindowBuilder, GlobalShortcutManager, Manager};
 
 /// Send a text payload to the OS by pasting it, which is more reliable than
 /// keystroking each character when modifiers (like Shift) were just pressed.
@@ -44,27 +38,37 @@ set the clipboard to oldClipboard
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
-            // Register the global shortcut to summon the Spotlight-like UI.
-            // Shift+L (uppercase L) will emit an event to the frontend.
-            let app_handle = app.handle();
-            app.global_shortcut_manager()
-                .register("Shift+L", move || {
-                    if SHORTCUT_BUSY.swap(true, Ordering::SeqCst) {
-                        return;
-                    }
-                    // Notify frontend and also type a sample text to make it visible the shortcut fired.
-                    let _ = app_handle.emit_all("show-spotlight", ());
+            // Create a dedicated launcher window, hidden by default.
+            WindowBuilder::new(
+                app,
+                "launcher",
+                tauri::WindowUrl::App("index.html?window=launcher".into()),
+            )
+            .title("Prompt Engine Launcher")
+            .visible(false)
+            .decorations(false)
+            .always_on_top(true)
+            .resizable(false)
+            .inner_size(760.0, 520.0)
+            .build()
+            .ok();
 
-                    // Delay the typing slightly so key-up for Shift+L completes, preventing missing letters.
-                    thread::spawn(|| {
-                        thread::sleep(Duration::from_millis(200));
-                        let _ = type_text("Hello World".to_string());
-                        // Release after a short delay to avoid key-repeat spam.
-                        thread::sleep(Duration::from_millis(300));
-                        SHORTCUT_BUSY.store(false, Ordering::SeqCst);
-                    });
-                })
-                .map_err(|e| e)?;
+            // Global shortcut: Cmd+Option+L → show launcher window and notify frontend.
+            // Keep the handler minimal to avoid prior accelerator issues.
+            #[cfg(target_os = "macos")]
+            {
+                let handle = app.handle();
+                let mut shortcuts = app.global_shortcut_manager();
+                shortcuts
+                    .register("Command+Option+L", move || {
+                        if let Some(window) = handle.get_window("launcher") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                            let _ = handle.emit_all("show-spotlight", ());
+                        }
+                    })
+                    .map_err(|e| e)?;
+            }
 
             Ok(())
         })
