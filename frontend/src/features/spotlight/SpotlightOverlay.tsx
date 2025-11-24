@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import './spotlight-overlay.css';
 
 type SpotlightOverlayProps = {
@@ -9,6 +9,26 @@ type SpotlightOverlayProps = {
 function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const handleEscape = useCallback(
+    (event: KeyboardEvent | ReactKeyboardEvent<HTMLElement>) => {
+      const isEscape = event.key === 'Escape' || event.key === 'Esc' || event.code === 'Escape';
+      if (!isEscape) return;
+
+      if (import.meta.env.DEV) {
+        console.log('[spotlight overlay] escape pressed', {
+          key: event.key,
+          code: event.code,
+          target: (event.target as HTMLElement)?.tagName,
+        });
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      onClose();
+    },
+    [onClose]
+  );
+
   useEffect(() => {
     if (open) {
       inputRef.current?.focus();
@@ -18,16 +38,14 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
   useEffect(() => {
     if (!open) return undefined;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-      }
+    const listenerOptions: AddEventListenerOptions = { capture: true };
+    window.addEventListener('keydown', handleEscape, listenerOptions);
+    window.addEventListener('keyup', handleEscape, listenerOptions);
+    return () => {
+      window.removeEventListener('keydown', handleEscape, listenerOptions);
+      window.removeEventListener('keyup', handleEscape, listenerOptions);
     };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose]);
+  }, [handleEscape, open]);
 
   if (!open) return null;
 
@@ -38,6 +56,8 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
       aria-modal="true"
       aria-label="Prompt spotlight"
       onClick={onClose}
+      onKeyDownCapture={handleEscape}
+      onKeyUpCapture={handleEscape}
     >
       <div className="spotlight-overlay__card" onClick={(e) => e.stopPropagation()} role="document">
         <header className="spotlight-overlay__header">

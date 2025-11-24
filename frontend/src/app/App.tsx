@@ -18,6 +18,14 @@ function App() {
 
   const openSpotlight = useCallback(() => setSpotlightOpen(true), []);
   const closeSpotlight = useCallback(() => setSpotlightOpen(false), []);
+  const handleCloseSpotlight = useCallback(() => {
+    if (isSpotlightWindow && isTauri) {
+      getCurrent().hide();
+      return;
+    }
+
+    closeSpotlight();
+  }, [closeSpotlight, isSpotlightWindow, isTauri]);
 
   // Detect if this is the dedicated spotlight window.
   useEffect(() => {
@@ -38,6 +46,15 @@ function App() {
       document.body.classList.add('spotlight-window');
       document.documentElement.classList.add('spotlight-window');
       document.getElementById('root')?.classList.add('spotlight-window');
+
+      // Auto-open DevTools for the spotlight window in dev builds so logs are visible.
+      if (import.meta.env.DEV && isTauri) {
+        try {
+          getCurrent().openDevTools();
+        } catch {
+          // ignore if opening devtools fails
+        }
+      }
     } else {
       document.body.classList.remove('spotlight-window');
       document.documentElement.classList.remove('spotlight-window');
@@ -80,19 +97,44 @@ function App() {
     return () => window.removeEventListener('keydown', handleHotkey);
   }, [openSpotlight, isTauri, isSpotlightWindow]);
 
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      const isEscape = event.key === 'Escape' || event.key === 'Esc' || event.code === 'Escape';
+      if (!isEscape) return;
+
+      if (import.meta.env.DEV) {
+        console.log('[spotlight] escape pressed', {
+          key: event.key,
+          code: event.code,
+          target: (event.target as HTMLElement)?.tagName,
+          isSpotlightWindow,
+          spotlightOpen,
+        });
+      }
+
+      // Only handle Escape when the spotlight UI is visible.
+      if (!isSpotlightWindow && !spotlightOpen) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      handleCloseSpotlight();
+    };
+
+    const listenerOptions: AddEventListenerOptions = { capture: true };
+    window.addEventListener('keydown', handleEscape, listenerOptions);
+    window.addEventListener('keyup', handleEscape, listenerOptions);
+    return () => {
+      window.removeEventListener('keydown', handleEscape, listenerOptions);
+      window.removeEventListener('keyup', handleEscape, listenerOptions);
+    };
+  }, [handleCloseSpotlight, isSpotlightWindow, spotlightOpen]);
+
   // In the spotlight window, render only the overlay and hide the shell.
   if (isSpotlightWindow) {
     return (
       <SpotlightOverlay
         open
-        onClose={() => {
-          // Hide the window when closing the overlay
-          if (isTauri) {
-            getCurrent().hide();
-          } else {
-            setSpotlightOpen(false);
-          }
-        }}
+        onClose={handleCloseSpotlight}
       />
     );
   }
@@ -104,7 +146,7 @@ function App() {
         <main className="app-content">
           <AppRoutes />
         </main>
-        <SpotlightOverlay open={spotlightOpen} onClose={closeSpotlight} />
+        <SpotlightOverlay open={spotlightOpen} onClose={handleCloseSpotlight} />
       </div>
     </HashRouter>
   );

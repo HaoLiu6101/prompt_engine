@@ -143,10 +143,9 @@ Goal: Minimal, predictable behavior.
 
 Flow:
 1. User in any application (IDE, browser, editor).
-2. Press global hotkey (e.g., `Ctrl+Shift+P`):
-   - Small overlay opens (Tauri window):
-     - Search bar.
-     - Recent prompts list.
+2. Press global hotkey (`Cmd+Option+L` on macOS; same chord handled in-app for web/dev fallback):
+   - Small overlay opens (dedicated Tauri window, 760x520, always-on-top, frameless).
+   - If the dedicated window is unavailable (browser/dev mode), fall back to inline overlay inside the app shell.
 3. User searches and selects prompt.
 4. If prompt has schema:
    - Inline form pops up with required fields.
@@ -163,14 +162,15 @@ Constraints:
 
 ---
 
-### 3.2 Spotlight Flow (Ctrl+Alt+Space)
+### 3.2 Spotlight Flow (Cmd+Option+L)
 
 Target: sub-3s from hotkey to prompt delivery, offline-friendly.
 
 Flow:
-1. User presses global hotkey `Ctrl+Alt+Space` (configurable).
+1. User presses global hotkey `Cmd+Option+L` (registered as a global shortcut on macOS; same chord works as an in-app handler when the app has focus or in the browser). Windows/Linux global binding is TBD.
 2. Spotlight overlay appears (no mouse required):
    - Input box focused by default.
+   - Dedicated Tauri spotlight window is shown when available; otherwise an inline overlay opens over the app shell.
    - List shows recent + cached prompts (approved-only unless user toggles).
 3. User types keywords:
    - Primary search hits local cache immediately (name/description/tags/content snippets).
@@ -181,12 +181,13 @@ Flow:
    - If prompt has variables → show inline form for required fields (keyboard-first).
 5. User confirms:
    - Compose final prompt string (system prompt + filled variables).
-   - Write to clipboard via Tauri; optional “Auto-paste” toggle triggers simulated `Ctrl+V`.
+   - Write to clipboard via Tauri; optional “Auto-paste” toggle triggers simulated `Cmd+V` (or `Ctrl+V` when Windows binding is added).
 6. Spotlight closes and returns focus to previous app; on failure, keep overlay and show error toast.
 
 Constraints & guardrails:
 - Latency budget: open + initial results ≤ 300ms from cache; background fetch must not block typing.
-- Security: clipboard write and keystroke simulation require explicit user opt-in; persist preference.
+- Platform coverage: global shortcut currently registered only on macOS; other OS use the in-app handler until native global binding is added.
+- Security: clipboard write and keystroke simulation (Cmd+V via AppleScript on macOS) require explicit user opt-in; persist preference.
 - Governance: default to approved versions; if draft/experimental selected, surface warning chip.
 - Accessibility: full keyboard navigation (arrow/enter), escape to close, screen-reader labels for controls.
 

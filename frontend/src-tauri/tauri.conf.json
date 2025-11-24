@@ -10,6 +10,16 @@
     "distDir": "../dist"
   },
   "tauri": {
+    "allowlist": {
+      "window": {
+        "all": false,
+        "close": true,
+        "create": true,
+        "hide": true,
+        "show": true,
+        "setFocus": true
+      }
+    },
     "bundle": {
       "identifier": "com.example.promptengine",
       "active": true,
