@@ -8,7 +8,7 @@ mod library;
 #[cfg(target_os = "macos")]
 use core_graphics::event::CGEvent;
 #[cfg(target_os = "macos")]
-use core_graphics::{display::CGDisplay, event_source::CGEventSourceStateID};
+use core_graphics::{display::CGDisplay, event_source::CGEventSourceStateID, geometry::CGPoint};
 #[cfg(target_os = "macos")]
 use objc::{msg_send, sel, sel_impl};
 #[cfg(target_os = "macos")]
@@ -209,13 +209,27 @@ fn position_spotlight_on_cursor(window: &tauri::Window) {
     // into the target display's physical pixels to avoid drifting when moving across monitors.
     let window_size_points = window_size.to_logical::<f64>(window_scale);
 
-    let target_x_points = bounds.origin.x + ((bounds.size.width - window_size_points.width) / 2.0);
-    let target_y_points = bounds.origin.y + ((bounds.size.height - window_size_points.height) / 2.0);
+    // Center of the target display in points (CoreGraphics uses a bottom-left origin).
+    let center_x_points = bounds.origin.x + (bounds.size.width / 2.0);
+    let center_y_points = bounds.origin.y + (bounds.size.height / 2.0);
 
-    let target_x = (target_x_points * target_scale).round() as i32;
-    let target_y = (target_y_points * target_scale).round() as i32;
+    // Desired top-left in points. We set the Cocoa window directly to avoid extra transforms.
+    let left_points = (center_x_points - window_size_points.width / 2.0).round();
+    let top_points = (center_y_points + window_size_points.height / 2.0).round();
 
-    let _ = window.set_position(Position::Physical(PhysicalPosition { x: target_x, y: target_y }));
+    if let Ok(ns_window_ptr) = window.ns_window() {
+        unsafe {
+            let ns_window: *mut Object = ns_window_ptr as *mut _;
+            let point = CGPoint::new(left_points, top_points);
+            let _: () = msg_send![ns_window, setFrameTopLeftPoint: point];
+        }
+    } else {
+        // Fallback: convert back to physical pixels using the target display scale.
+        let _ = window.set_position(Position::Physical(PhysicalPosition {
+            x: (left_points * target_scale) as i32,
+            y: ((top_points - window_size_points.height) * target_scale) as i32,
+        }));
+    }
 }
 
 #[cfg(not(target_os = "macos"))]
