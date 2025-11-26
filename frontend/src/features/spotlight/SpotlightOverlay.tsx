@@ -65,11 +65,11 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
         const items = await searchLibrary(term);
         if (!mountedRef.current || token !== searchTokenRef.current) return;
         setResults(items);
-        if (!items.length) {
-          setSelectedId(null);
-        } else if (!selectedId || !items.some((item) => item.id === selectedId)) {
-          setSelectedId(items[0].id);
-        }
+        setSelectedId((current) => {
+          if (!items.length) return null;
+          if (current && items.some((item) => item.id === current)) return current;
+          return items[0].id;
+        });
       } catch (error) {
         console.error('[spotlight] search failed', error);
         if (mountedRef.current) {
@@ -82,7 +82,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
         if (mountedRef.current) setIsLoading(false);
       }
     },
-    [selectedId]
+    []
   );
 
   const handleInsert = useCallback(async () => {
@@ -125,19 +125,21 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
   useEffect(() => {
     if (open) {
       setInsertState({ status: 'idle' });
-      // Do not reset user query when reopening; reuse existing query to avoid clearing input.
-      const nextQuery = query;
-      runSearch(nextQuery);
-      initializedRef.current = true;
       setTimeout(() => inputRef.current?.focus(), 40);
     } else {
       initializedRef.current = false;
     }
-  }, [open, query, runSearch]);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return undefined;
-    const timer = setTimeout(() => runSearch(query), 220);
+    const delay = initializedRef.current ? 220 : 0;
+    initializedRef.current = true;
+    if (delay === 0) {
+      runSearch(query);
+      return undefined;
+    }
+    const timer = setTimeout(() => runSearch(query), delay);
     return () => clearTimeout(timer);
   }, [open, query, runSearch]);
 

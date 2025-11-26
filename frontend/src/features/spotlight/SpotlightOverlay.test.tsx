@@ -46,7 +46,7 @@ describe('SpotlightOverlay', () => {
   it('renders results and preview when opened', async () => {
     render(<SpotlightOverlay open onClose={() => {}} />);
 
-    expect(await screen.findByText('LLM Code Review')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'LLM Code Review' })).toBeInTheDocument();
     expect(screen.getByLabelText('Prompt body')).toHaveTextContent(mockItems[0].body);
     expect(mockSearchLibrary).toHaveBeenCalledWith('');
   });
