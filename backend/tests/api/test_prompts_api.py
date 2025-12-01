@@ -24,6 +24,8 @@ async def test_create_and_fetch_prompt(api_client: AsyncClient) -> None:
         "name": f"smoke-{suffix}",
         "display_name": f"Smoke Test {suffix}",
         "description": "created via CI smoke test",
+        "item_type": "prompt",
+        "tags": ["smoke", "qa"],
         "content": "return the input untouched",
         "notes": "initial version",
     }
@@ -34,6 +36,8 @@ async def test_create_and_fetch_prompt(api_client: AsyncClient) -> None:
     created = create_response.json()
     prompt_id = created["id"]
     assert created["name"] == payload["name"]
+    assert created["item_type"] == "prompt"
+    assert set(created["tags"]) == {"smoke", "qa"}
     assert created["current_version"]["version_number"] == 1
     assert created["current_version"]["content"] == payload["content"]
 
@@ -72,6 +76,8 @@ async def test_list_prompts_since_filters_results(api_client: AsyncClient) -> No
         "name": "since-test",
         "display_name": "Since Test",
         "description": None,
+        "item_type": "prompt",
+        "tags": ["cursor"],
         "content": "content",
         "notes": None,
     }
@@ -91,6 +97,8 @@ async def test_create_prompt_duplicate_name_returns_400(api_client: AsyncClient)
         "name": "dupe-name",
         "display_name": "One",
         "description": None,
+        "item_type": "prompt",
+        "tags": [],
         "content": "first",
         "notes": None,
     }
@@ -107,6 +115,8 @@ async def test_route_list_prompts_direct(db_session) -> None:
         name="direct-call",
         display_name="Direct Call",
         description=None,
+        item_type="prompt",
+        tags=[],
         content="body",
         notes=None,
     )
@@ -130,9 +140,34 @@ async def test_route_create_prompt_rolls_back_on_integrity_error(monkeypatch, db
         name="dupe",
         display_name="Dupe",
         description=None,
+        item_type="prompt",
+        tags=[],
         content="body",
         notes=None,
     )
 
     with pytest.raises(Exception):
         await prompts_api.create_prompt(payload, db_session)
+
+
+async def test_search_endpoint_returns_library_shape(api_client: AsyncClient) -> None:
+    payload = {
+        "name": "search-endpoint",
+        "display_name": "Search Endpoint Prompt",
+        "description": "desc",
+        "item_type": "prompt",
+        "tags": ["library", "qa"],
+        "content": "searchable content body",
+        "notes": None,
+    }
+    create_response = await api_client.post("/api/v1/prompts", json=payload)
+    assert create_response.status_code == 201
+
+    search_response = await api_client.get("/api/v1/prompts/search", params={"query": "qa"})
+    assert search_response.status_code == 200
+
+    items = search_response.json()["items"]
+    assert items
+    assert items[0]["title"] == payload["display_name"]
+    assert items[0]["body"] == payload["content"]
+    assert set(items[0]["tags"]) == {"library", "qa"}

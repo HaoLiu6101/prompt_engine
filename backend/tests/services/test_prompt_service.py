@@ -4,7 +4,7 @@ import uuid
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.prompt import PromptStatus, PromptVersionStatus
+from app.models.prompt import PromptItemType, PromptStatus, PromptVersionStatus
 from app.services import prompt_service
 
 pytestmark = pytest.mark.asyncio
@@ -16,13 +16,17 @@ async def test_create_prompt_sets_defaults(db_session: AsyncSession) -> None:
         name="svc-test",
         display_name="Service Test",
         description="desc",
+        item_type=PromptItemType.PROMPT,
+        tags=["qa", "testing"],
         content="content",
         notes="notes",
     )
     await db_session.commit()
-    await db_session.refresh(prompt, attribute_names=["current_version"])
+    await db_session.refresh(prompt, attribute_names=["current_version", "tag_links"])
 
     assert prompt.status == PromptStatus.ACTIVE
+    assert prompt.item_type == PromptItemType.PROMPT
+    assert set(prompt.tags) == {"qa", "testing"}
     assert prompt.current_version is not None
     assert prompt.current_version.version_number == 1
     assert prompt.current_version.status == PromptVersionStatus.APPROVED
@@ -44,6 +48,8 @@ async def test_list_prompts_paginates_and_orders(db_session: AsyncSession) -> No
             name=f"prompt-{idx}",
             display_name=f"Prompt {idx}",
             description=None,
+            item_type=PromptItemType.PROMPT,
+            tags=[],
             content=f"content-{idx}",
             notes=None,
         )
@@ -63,3 +69,21 @@ async def test_list_prompts_paginates_and_orders(db_session: AsyncSession) -> No
     )
     assert [p.name for p in items_filtered] == ["prompt-2"]
     assert next_cursor_filtered is None
+
+
+async def test_search_library_matches_tags_and_content(db_session: AsyncSession) -> None:
+    await prompt_service.create_prompt(
+        db_session,
+        name="searchable",
+        display_name="QA Checklist",
+        description="search desc",
+        item_type=PromptItemType.PROMPT,
+        tags=["qa", "testing"],
+        content="Generate a QA checklist",
+        notes=None,
+    )
+    await db_session.commit()
+
+    hits = await prompt_service.search_library(db_session, query="testing", limit=10)
+    assert hits
+    assert hits[0].display_name == "QA Checklist"

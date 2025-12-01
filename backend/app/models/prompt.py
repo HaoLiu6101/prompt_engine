@@ -7,6 +7,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     JSON,
     String,
@@ -15,6 +16,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -25,6 +27,12 @@ JSONDict = JSON().with_variant(JSONB, "postgresql")
 class PromptStatus(str, enum.Enum):
     ACTIVE = "active"
     ARCHIVED = "archived"
+
+
+class PromptItemType(str, enum.Enum):
+    PROMPT = "prompt"
+    SNIPPET = "snippet"
+    FAQ = "faq"
 
 
 class PromptVersionStatus(str, enum.Enum):
@@ -40,12 +48,18 @@ class Prompt(Base):
     __table_args__ = (
         UniqueConstraint("name", name="idx_prompts_name_unique"),
         CheckConstraint("status in ('active', 'archived')", name="chk_prompts_status"),
+        CheckConstraint(
+            "item_type in ('prompt', 'snippet', 'faq')", name="chk_prompts_item_type"
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
+    item_type: Mapped[PromptItemType] = mapped_column(
+        String(32), nullable=False, default=PromptItemType.PROMPT.value
+    )
     collection_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     owner_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     status: Mapped[PromptStatus] = mapped_column(
@@ -69,7 +83,21 @@ class Prompt(Base):
         foreign_keys="PromptVersion.prompt_id",
     )
     current_version: Mapped[Optional["PromptVersion"]] = relationship(
-        "PromptVersion", foreign_keys=[current_version_id], post_update=True
+        "PromptVersion",
+        foreign_keys=[current_version_id],
+        post_update=True,
+        lazy="selectin",
+    )
+    tag_links: Mapped[list["PromptTag"]] = relationship(
+        "PromptTag",
+        back_populates="prompt",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    tags: Mapped[list[str]] = association_proxy(
+        "tag_links",
+        "tag",
+        creator=lambda tag: PromptTag(tag=tag),
     )
 
 
@@ -109,3 +137,18 @@ class PromptVersion(Base):
     prompt: Mapped[Prompt] = relationship(
         back_populates="versions", foreign_keys=[prompt_id]
     )
+
+
+class PromptTag(Base):
+    __tablename__ = "prompt_tags"
+    __table_args__ = (
+        UniqueConstraint("prompt_id", "tag", name="uq_prompt_tags_prompt_tag"),
+        Index("idx_prompt_tags_tag", "tag"),
+    )
+
+    prompt_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("prompts.id", ondelete="CASCADE"), primary_key=True
+    )
+    tag: Mapped[str] = mapped_column(String(64), primary_key=True)
+
+    prompt: Mapped[Prompt] = relationship("Prompt", back_populates="tag_links")
