@@ -6,7 +6,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { copyToClipboard, searchLibrary, type LibraryItem } from '../../services/libraryClient';
+import { copyToClipboard, searchLibrary, syncLibraryFromBackend, type LibraryItem } from '../../services/libraryClient';
 import './spotlight-overlay.css';
 
 type SpotlightOverlayProps = {
@@ -33,6 +33,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
   const [results, setResults] = useState<LibraryItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(
     () => () => {
@@ -161,6 +162,21 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
     };
   }, [handleEscape, open]);
 
+  const handleSync = useCallback(async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try {
+      await syncLibraryFromBackend();
+      await runSearch(query);
+      setInsertState({ status: 'success', message: 'Library synced.' });
+    } catch (error) {
+      console.error('[spotlight] sync failed', error);
+      setInsertState({ status: 'error', message: 'Sync failed. Using cached items.' });
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isSyncing, query, runSearch]);
+
   if (!open) return null;
 
   const handleInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
@@ -230,7 +246,17 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
             />
             {query ? <span className="spotlight-overlay__badge">Enter to copy</span> : <span className="spotlight-overlay__badge">Showing recent</span>}
           </div>
-          <div className="spotlight-overlay__kbd">Cmd+Alt+L</div>
+          <div className="spotlight-overlay__search-actions">
+            <button
+              type="button"
+              className="spotlight-overlay__action spotlight-overlay__action--secondary"
+              onClick={handleSync}
+              disabled={isSyncing}
+            >
+              {isSyncing ? 'Syncing…' : 'Sync'}
+            </button>
+            <div className="spotlight-overlay__kbd">Cmd+Alt+L</div>
+          </div>
         </div>
 
         <div className="spotlight-overlay__body">

@@ -179,6 +179,57 @@ impl Library {
 
         collect_rows(rows)
     }
+
+    pub fn upsert_items(&self, items: &[LibraryItem]) -> Result<usize, String> {
+        let mut conn = self.open_conn()?;
+        let tx = conn
+            .transaction()
+            .map_err(|e| format!("Failed to start transaction: {e}"))?;
+
+        let mut stmt = tx
+            .prepare(
+                "INSERT INTO items (id, title, body, item_type, source, tags, created_at, updated_at, version, sync_state) 
+                 VALUES (:id, :title, :body, :item_type, :source, :tags, :created_at, :updated_at, :version, 'clean')
+                 ON CONFLICT(id) DO UPDATE SET 
+                    title=excluded.title,
+                    body=excluded.body,
+                    item_type=excluded.item_type,
+                    source=excluded.source,
+                    tags=excluded.tags,
+                    created_at=excluded.created_at,
+                    updated_at=excluded.updated_at,
+                    version=excluded.version,
+                    sync_state='clean'"
+            )
+            .map_err(|e| format!("Failed to prepare upsert statement: {e}"))?;
+
+        let mut count = 0usize;
+        for item in items {
+            let tags = serde_json::to_string(&item.tags)
+                .map_err(|e| format!("Failed to serialize tags: {e}"))?;
+
+            stmt.execute(named_params! {
+                ":id": &item.id,
+                ":title": &item.title,
+                ":body": &item.body,
+                ":item_type": &item.item_type,
+                ":source": &item.source,
+                ":tags": tags,
+                ":created_at": item.created_at,
+                ":updated_at": item.updated_at,
+                ":version": item.version,
+            })
+            .map_err(|e| format!("Failed to upsert item {}: {e}", item.id))?;
+            count += 1;
+        }
+
+        drop(stmt);
+
+        tx.commit()
+            .map_err(|e| format!("Failed to commit upsert transaction: {e}"))?;
+
+        Ok(count)
+    }
 }
 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<LibraryItem> {
@@ -339,4 +390,12 @@ pub fn list_library(
 #[tauri::command]
 pub fn reseed_library(state: State<'_, Library>) -> Result<SeedResult, String> {
     state.reseed()
+}
+
+#[tauri::command]
+pub fn sync_library_from_backend(
+    state: State<'_, Library>,
+    items: Vec<LibraryItem>,
+) -> Result<usize, String> {
+    state.upsert_items(&items)
 }

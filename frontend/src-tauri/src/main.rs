@@ -306,7 +306,8 @@ fn main() {
             reposition_spotlight,
             library::search_library,
             library::list_library,
-            library::reseed_library
+            library::reseed_library,
+            library::sync_library_from_backend
         ])
         .run(tauri::generate_context!())
         .expect("error while running Prompt Engine");

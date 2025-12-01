@@ -1,5 +1,6 @@
 import { writeText } from '@tauri-apps/api/clipboard';
 import { invoke } from '@tauri-apps/api/tauri';
+import { apiClient } from './apiClient';
 
 export type LibraryItem = {
   id: string;
@@ -22,6 +23,7 @@ const isTauriEnv = () =>
   typeof window !== 'undefined' && (('__TAURI_IPC__' in window) || ('__TAURI_INTERNALS__' in window));
 
 const baseTs = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 3; // 3 days ago to avoid beating fresh DB items
+let backendCache: LibraryItem[] = [];
 
 const fallbackItems: LibraryItem[] = [
   {
@@ -95,10 +97,11 @@ const fallbackItems: LibraryItem[] = [
 export async function searchLibrary(query: string, limit = 30): Promise<LibraryItem[]> {
   const mergeWithFallback = (primary: LibraryItem[], term: string) => {
     const fallbackMatches = filterFallback(term);
+    const backendMatches = filterBackendCache(term);
     const seen = new Set<string>();
     const merged: LibraryItem[] = [];
 
-    [...primary, ...fallbackMatches].forEach((item) => {
+    [...primary, ...backendMatches, ...fallbackMatches].forEach((item) => {
       if (seen.has(item.id)) return;
       seen.add(item.id);
       merged.push(item);
@@ -126,6 +129,51 @@ export async function searchLibrary(query: string, limit = 30): Promise<LibraryI
   }
 
   return mergeWithFallback([], query);
+}
+
+export async function syncLibraryFromBackend(token?: string): Promise<LibraryItem[]> {
+  try {
+    const items = await apiClient.get<{
+      items: Array<{
+        id: string;
+        title: string;
+        body: string;
+        item_type: string;
+        tags: string[];
+        version: number;
+        created_at: string;
+        updated_at: string;
+        source?: string;
+      }>;
+    }>('/api/v1/prompts/search?limit=500', { token });
+
+    const mapped = items.items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      body: item.body,
+      item_type: item.item_type,
+      source: item.source ?? 'backend',
+      tags: item.tags ?? [],
+      version: item.version ?? 1,
+      created_at: Math.floor(new Date(item.created_at).getTime() / 1000),
+      updated_at: Math.floor(new Date(item.updated_at).getTime() / 1000)
+    }));
+
+    backendCache = mapped;
+
+    if (isTauriEnv()) {
+      try {
+        await invoke('sync_library_from_backend', { items: mapped });
+      } catch (error) {
+        console.error('[library] failed to persist backend sync to local DB', error);
+      }
+    }
+
+    return mapped;
+  } catch (error) {
+    console.error('[library] backend sync failed', error);
+    throw error;
+  }
 }
 
 export async function reseedLibrary(): Promise<SeedResult> {
@@ -159,6 +207,18 @@ function filterFallback(query: string) {
 
   const lower = query.toLowerCase();
   return fallbackItems.filter(
+    (item) =>
+      item.title.toLowerCase().includes(lower) ||
+      item.body.toLowerCase().includes(lower) ||
+      item.tags.some((tag) => tag.toLowerCase().includes(lower))
+  );
+}
+
+function filterBackendCache(query: string) {
+  if (!query.trim()) return backendCache;
+
+  const lower = query.toLowerCase();
+  return backendCache.filter(
     (item) =>
       item.title.toLowerCase().includes(lower) ||
       item.body.toLowerCase().includes(lower) ||

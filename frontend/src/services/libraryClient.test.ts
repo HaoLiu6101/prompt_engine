@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { copyToClipboard, searchLibrary } from './libraryClient';
+import { copyToClipboard, searchLibrary, syncLibraryFromBackend } from './libraryClient';
 
 vi.mock('@tauri-apps/api/tauri', () => ({
   invoke: vi.fn()
@@ -14,9 +14,21 @@ vi.mock('@tauri-apps/api/clipboard', () => ({
 import { invoke } from '@tauri-apps/api/tauri';
 // eslint-disable-next-line import/first
 import { writeText } from '@tauri-apps/api/clipboard';
+// eslint-disable-next-line import/first
+import { apiClient } from './apiClient';
 
 const mockInvoke = vi.mocked(invoke);
 const mockWriteText = vi.mocked(writeText);
+vi.mock('./apiClient', async () => {
+  const actual = await vi.importActual<typeof import('./apiClient')>('./apiClient');
+  return {
+    ...actual,
+    apiClient: {
+      get: vi.fn()
+    }
+  };
+});
+const mockApiGet = vi.mocked((apiClient as unknown as { get: typeof apiClient.get }).get);
 
 describe('libraryClient', () => {
   beforeEach(() => {
@@ -114,5 +126,56 @@ describe('libraryClient', () => {
 
     expect(mockInvoke).toHaveBeenCalledWith('reseed_library');
     expect(result.inserted).toBe(1);
+  });
+
+  it('syncLibraryFromBackend populates backend cache', async () => {
+    // non-Tauri path: no invoke called
+    mockApiGet.mockResolvedValue({
+      items: [
+        {
+          id: 'from-api',
+          title: 'From API',
+          body: 'body',
+          item_type: 'prompt',
+          tags: ['api'],
+          version: 2,
+          created_at: new Date(0).toISOString(),
+          updated_at: new Date(0).toISOString(),
+          source: 'backend'
+        }
+      ]
+    });
+
+    const items = await syncLibraryFromBackend();
+    expect(mockApiGet).toHaveBeenCalledWith('/api/v1/prompts/search?limit=500', { token: undefined });
+    expect(items[0]?.id).toBe('from-api');
+
+    const results = await searchLibrary('api');
+    expect(results.some((item) => item.id === 'from-api')).toBe(true);
+  });
+
+  it('syncLibraryFromBackend persists to Tauri DB when available', async () => {
+    // @ts-expect-error adding test flag
+    window.__TAURI_IPC__ = true;
+    mockApiGet.mockResolvedValue({
+      items: [
+        {
+          id: 'persist-api',
+          title: 'Persist API',
+          body: 'body',
+          item_type: 'prompt',
+          tags: ['api'],
+          version: 2,
+          created_at: new Date(0).toISOString(),
+          updated_at: new Date(0).toISOString(),
+          source: 'backend'
+        }
+      ]
+    });
+
+    await syncLibraryFromBackend();
+    expect(mockInvoke).toHaveBeenCalledWith('sync_library_from_backend', {
+      items: expect.any(Array)
+    });
   });
 });

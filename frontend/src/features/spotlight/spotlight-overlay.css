@@ -101,7 +101,7 @@
   border-radius: 12px;
   display: flex;
   align-items: center;
-  padding: 8px 10px 8px 12px;
+  padding: 10px 12px;
   gap: 12px;
 }
 
@@ -110,6 +110,12 @@
   align-items: center;
   gap: 12px;
   flex: 1;
+}
+
+.spotlight-overlay__search-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .spotlight-overlay__search input {
@@ -277,6 +283,15 @@
 .spotlight-overlay__action:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(34, 197, 235, 0.2);
+}
+
+.spotlight-overlay__action--secondary {
+  padding: 6px 10px;
+  font-weight: 600;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  box-shadow: none;
 }
 
 .spotlight-overlay__loading {
