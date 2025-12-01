@@ -3,6 +3,7 @@ import { apiClient } from './apiClient';
 
 describe('apiClient', () => {
   const fetchSpy = vi.spyOn(global, 'fetch');
+  const defaultBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   beforeEach(() => {
     fetchSpy.mockReset();
@@ -19,7 +20,7 @@ describe('apiClient', () => {
     const result = await apiClient.get<{ ok: boolean }>('/api/test');
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      'http://localhost:1420/api/test',
+      `${defaultBase}/api/test`,
       expect.objectContaining({
         method: 'GET',
         headers: expect.any(Headers)
