@@ -96,28 +96,3 @@ async def create_prompt(payload: PromptCreate, db: AsyncSession = Depends(get_db
     except IntegrityError as exc:
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Prompt name already exists") from exc
-
-
-@router.post("", response_model=PromptResponse, status_code=status.HTTP_201_CREATED)
-async def create_prompt(payload: PromptCreate, db: AsyncSession = Depends(get_db)):
-    try:
-        prompt = await prompt_service.create_prompt(
-            db,
-            name=payload.name,
-            display_name=payload.display_name,
-            description=payload.description,
-            item_type=payload.item_type,
-            tags=payload.tags,
-            content=payload.content,
-            notes=payload.notes,
-        )
-        await db.commit()
-        # Ensure related current_version is loaded to avoid async lazy-load during response serialization
-        await db.refresh(
-            prompt,
-            attribute_names=["current_version", "tag_links", "created_at", "updated_at"],
-        )
-        return prompt
-    except IntegrityError as exc:
-        await db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Prompt name already exists") from exc
