@@ -10,6 +10,7 @@ frontend/coverage
 *.log
 .env
 .env.*
+!.env.example
 
 # Editor/IDE
 .idea
