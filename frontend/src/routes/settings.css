@@ -1,0 +1,21 @@
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.settings__section {
+  gap: 14px;
+}
+
+.settings__checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #0f172a;
+}

@@ -1,0 +1,25 @@
+{
+  "eyebrow": "Getting started",
+  "title": "Connect your Prompt Engine backend",
+  "subtitle": "Set the backend endpoint and session token so the workspace can sync prompts, versions, and approvals.",
+  "backendLabel": "Backend URL",
+  "backendHint": "Use the FastAPI base, e.g. http://localhost:8000",
+  "tokenLabel": "Access token",
+  "tokenPlaceholder": "Paste a personal token or session JWT",
+  "tokenHint": "Only stored locally for this desktop session.",
+  "shortcutHint": "Current global shortcut: {{shortcut}}",
+  "configureLater": "Open settings",
+  "continue": "Continue to workspace",
+  "errors": {
+    "backendRequired": "Backend URL is required"
+  },
+  "steps": {
+    "title": "You will be able to",
+    "one": "Browse and search approved prompts",
+    "two": "Draft a new version and request approval",
+    "three": "Sync offline-ready copies to desktop"
+  },
+  "helperTitle": "Need a different backend?",
+  "helperSubtitle": "You can maintain multiple profiles in Settings and switch as needed.",
+  "helperBadge": "Desktop-first"
+}

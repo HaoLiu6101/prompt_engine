@@ -14,13 +14,13 @@ function TopNav() {
       <div className="nav-cluster">
         <nav className="nav-links">
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
-            {t('nav:welcome')}
+            {t('nav:connect')}
           </NavLink>
-          <NavLink to="/home" className={({ isActive }) => (isActive ? 'active' : '')}>
-            {t('nav:home')}
+          <NavLink to="/workspace" className={({ isActive }) => (isActive ? 'active' : '')}>
+            {t('nav:workspace')}
           </NavLink>
-          <NavLink to="/prompts" className={({ isActive }) => (isActive ? 'active' : '')}>
-            {t('nav:prompts')}
+          <NavLink to="/settings" className={({ isActive }) => (isActive ? 'active' : '')}>
+            {t('nav:settings')}
           </NavLink>
         </nav>
         <LanguageSwitcher />

@@ -3,7 +3,19 @@ interface RequestOptions extends RequestInit {
 }
 
 class ApiClient {
-  constructor(private readonly baseUrl: string) {}
+  private baseUrl: string;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  setBaseUrl(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  getBaseUrl() {
+    return this.baseUrl;
+  }
 
   async get<T>(path: string, options: RequestOptions = {}): Promise<T> {
     return this.request<T>(path, { ...options, method: 'GET' });

@@ -1,0 +1,26 @@
+{
+  "eyebrow": "Connect",
+  "title": "Connect to Prompt Engine",
+  "subtitle": "Enter the backend endpoint and sign in to continue to your workspace.",
+  "backendLabel": "Backend URL",
+  "backendHint": "Use the FastAPI base, e.g. http://localhost:8000",
+  "loginLabel": "Login or email",
+  "loginPlaceholder": "name@company.com",
+  "passwordLabel": "Password or token",
+  "passwordPlaceholder": "Paste a personal token or password",
+  "passwordHint": "Stored locally for this desktop session only.",
+  "rememberMe": "Remember me on this device",
+  "shortcutHint": "Global shortcut: {{shortcut}}",
+  "openSettings": "Advanced settings",
+  "continue": "Continue to workspace",
+  "errors": {
+    "backendRequired": "Backend URL is required"
+  },
+  "asideTitle": "You will be able to",
+  "asideOne": "Browse and search approved prompts",
+  "asideTwo": "Draft new versions and request approval",
+  "asideThree": "Sync offline-ready copies to desktop",
+  "helperTitle": "Need a different backend?",
+  "helperSubtitle": "Manage endpoints and shortcuts in Settings.",
+  "helperBadge": "Desktop-first"
+}

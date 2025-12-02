@@ -1,41 +1,58 @@
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
 import AppRoutes from './AppRoutes';
-// import Home from './Home';
+import { useAppConfigStore } from '../stores/useAppConfigStore';
+import { useSessionStore } from '../stores/useSessionStore';
+
+const defaults = {
+  config: useAppConfigStore.getState(),
+  session: useSessionStore.getState(),
+};
 
 describe('AppRoutes', () => {
-  it('renders Welcome by default', () => {
+  beforeEach(() => {
+    useAppConfigStore.setState({
+      backendUrl: '',
+      shortcut: defaults.config.shortcut,
+      autoSync: defaults.config.autoSync,
+      offlineMode: defaults.config.offlineMode,
+    });
+    useSessionStore.setState({ token: null, loginName: '', rememberMe: false });
+  });
+
+  it('renders Connect by default', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <AppRoutes />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Welcome')).toBeInTheDocument();
-    expect(screen.getByText('Open desktop client')).toBeInTheDocument();
+    expect(screen.getByText('Connect to Prompt Engine')).toBeInTheDocument();
+    expect(screen.getByText('Continue to workspace')).toBeInTheDocument();
   });
 
-  it('renders PromptCatalog on /prompts', () => {
+  it('redirects protected routes to onboarding when not configured', () => {
+    useAppConfigStore.setState({ backendUrl: '' });
     render(
       <MemoryRouter initialEntries={['/prompts']}>
         <AppRoutes />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Prompts')).toBeInTheDocument();
-    expect(screen.getByText('New prompt')).toBeInTheDocument();
+    expect(screen.getByText('Connect to Prompt Engine')).toBeInTheDocument();
   });
 
-  it('renders Home on /home', () => {
+  it('renders workspace when backend and token are present', () => {
+    useAppConfigStore.setState({ backendUrl: 'http://api.example.com' });
+    useSessionStore.setState({ token: 'abc', loginName: '', rememberMe: false });
+
     render(
-      <MemoryRouter initialEntries={['/home']}>
-        <Routes>
-          <Route path="/*" element={<AppRoutes />} />
-        </Routes>
+      <MemoryRouter initialEntries={['/workspace']}>
+        <AppRoutes />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Prompt Engine')).toBeInTheDocument();
-    expect(screen.getByText('Recent prompts')).toBeInTheDocument();
+    expect(screen.getByText('Prompt workspace')).toBeInTheDocument();
+    expect(screen.getByText('New prompt')).toBeInTheDocument();
   });
 });

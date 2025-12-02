@@ -1,13 +1,19 @@
 import { render, screen } from '@testing-library/react';
-import Welcome from './Welcome';
+import { MemoryRouter } from 'react-router-dom';
+import Connect from './Connect';
 
-describe('Welcome', () => {
-  it('renders title and actions', () => {
-    render(<Welcome />);
+describe('Connect', () => {
+  it('renders connect form and actions', () => {
+    render(
+      <MemoryRouter>
+        <Connect />
+      </MemoryRouter>
+    );
 
-    expect(screen.getByText('Welcome')).toBeInTheDocument();
-    expect(screen.getByText('Open desktop client')).toBeInTheDocument();
-    expect(screen.getByText('Configure backend')).toBeInTheDocument();
-    expect(screen.getByText(/Prompt Engine/)).toBeInTheDocument();
+    expect(screen.getByText('Connect to Prompt Engine')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('http://localhost:8000')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('name@company.com')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Paste a personal token or password')).toBeInTheDocument();
+    expect(screen.getByText('Continue to workspace')).toBeInTheDocument();
   });
 });

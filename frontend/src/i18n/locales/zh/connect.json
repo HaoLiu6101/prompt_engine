@@ -1,0 +1,26 @@
+{
+  "eyebrow": "连接",
+  "title": "连接 Prompt Engine",
+  "subtitle": "输入后端地址并登录，继续进入工作区。",
+  "backendLabel": "后端地址",
+  "backendHint": "使用 FastAPI 根地址，例如 http://localhost:8000",
+  "loginLabel": "登录名或邮箱",
+  "loginPlaceholder": "name@company.com",
+  "passwordLabel": "密码或令牌",
+  "passwordPlaceholder": "粘贴个人令牌或密码",
+  "passwordHint": "仅在此桌面会话中本地保存。",
+  "rememberMe": "在此设备上记住我",
+  "shortcutHint": "全局快捷键：{{shortcut}}",
+  "openSettings": "高级设置",
+  "continue": "进入工作区",
+  "errors": {
+    "backendRequired": "后端地址不能为空"
+  },
+  "asideTitle": "你可以",
+  "asideOne": "浏览、搜索已批准的提示词",
+  "asideTwo": "起草新版本并发起审批",
+  "asideThree": "同步离线可用的副本",
+  "helperTitle": "需要切换后端？",
+  "helperSubtitle": "在设置中管理端点与快捷键。",
+  "helperBadge": "桌面优先"
+}

@@ -1,0 +1,21 @@
+{
+  "eyebrow": "Configuration",
+  "title": "Settings",
+  "subtitle": "Manage backend endpoints, tokens, shortcuts, and sync preferences.",
+  "backendTitle": "Backend",
+  "backendLabel": "Backend URL",
+  "backendHint": "FastAPI base address. Changes apply immediately.",
+  "tokenLabel": "Session token",
+  "tokenPlaceholder": "Bearer token or session JWT",
+  "tokenHint": "Stored locally for the desktop client only.",
+  "save": "Save",
+  "saved": "Saved",
+  "clearSession": "Clear session",
+  "shortcutsTitle": "Shortcuts & Sync",
+  "shortcutLabel": "Spotlight/Overlay shortcut",
+  "shortcutHint": "Adjust the global shortcut to launch spotlight on desktop builds.",
+  "autoSyncLabel": "Auto-sync prompts",
+  "autoSyncHint": "Pull latest prompt versions on launch and when coming online.",
+  "offlineLabel": "Offline cache",
+  "offlineHint": "Keep a cached copy of approved prompts for offline use."
+}

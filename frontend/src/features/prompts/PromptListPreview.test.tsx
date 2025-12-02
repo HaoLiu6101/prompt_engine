@@ -16,7 +16,7 @@ const mockApiGet = vi.mocked(apiClient.get);
 describe('PromptListPreview', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    useSessionStore.setState({ token: null });
+    useSessionStore.setState({ token: null, loginName: '', rememberMe: false });
   });
 
   it('shows demo prompts when no session token', () => {
@@ -38,7 +38,7 @@ describe('PromptListPreview', () => {
       }
     ];
     mockApiGet.mockResolvedValue(fetched);
-    useSessionStore.setState({ token: 'abc' });
+    useSessionStore.setState({ token: 'abc', loginName: '', rememberMe: false });
 
     render(<PromptListPreview />);
 

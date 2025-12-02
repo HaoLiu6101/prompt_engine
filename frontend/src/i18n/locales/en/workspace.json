@@ -1,0 +1,21 @@
+{
+  "title": "Prompt workspace",
+  "sidebarTitle": "Prompts",
+  "searchPlaceholder": "Search by name, owner, or tag",
+  "selectedEyebrow": "Selected prompt",
+  "versionLabel": "Version",
+  "ownerLabel": "Owner",
+  "runSandbox": "Test run",
+  "approvalCta": "Request approval",
+  "selectedHint": "Draft changes, capture reviewer notes, and request approval when ready.",
+  "emptySelection": "Select a prompt from the list to begin.",
+  "draftTitle": "Draft editor",
+  "draftBadge": "Local draft",
+  "bodyLabel": "Prompt body",
+  "draftPlaceholder": "Start a new version of this prompt. Variables, instructions, and metadata go here.",
+  "notesLabel": "Notes for approvers",
+  "notesPlaceholder": "What changed? Who should review? Add run context.",
+  "saveDraft": "Save draft",
+  "historyTitle": "Version history",
+  "historyHint": "Sync, approvals, and diffs"
+}

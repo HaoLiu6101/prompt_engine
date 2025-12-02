@@ -107,3 +107,11 @@ html.spotlight-window {
   background: #e2e8f0;
   color: #0f172a;
 }
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 12px;
+  margin: 0;
+  color: #475569;
+}

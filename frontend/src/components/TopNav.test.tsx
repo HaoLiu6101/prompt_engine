@@ -29,9 +29,9 @@ describe('TopNav', () => {
     await renderTopNav();
 
     expect(screen.getByRole('link', { name: 'Prompt Engine' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Welcome' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Prompts' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Connect' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Workspace' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument();
   });
 
   it('switches to Chinese when the language toggle is used', async () => {
@@ -41,8 +41,8 @@ describe('TopNav', () => {
     await user.click(screen.getByRole('button', { name: '中文' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: '提示词' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: '连接' })).toBeInTheDocument();
     });
-    expect(screen.getByRole('link', { name: '欢迎' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '工作区' })).toBeInTheDocument();
   });
 });

@@ -8,12 +8,12 @@ vi.mock('../features/spotlight/SpotlightOverlay', () => ({
 import App from './App';
 
 describe('App shell', () => {
-  it('renders navigation and welcome route by default', () => {
+  it('renders navigation and connect route by default', () => {
     render(<App />);
 
     expect(screen.getByRole('link', { name: 'Prompt Engine' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Welcome' })).toBeInTheDocument();
-    expect(screen.getByText('Open desktop client')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Connect to Prompt Engine' })).toBeInTheDocument();
+    expect(screen.getByText('Continue to workspace')).toBeInTheDocument();
   });
 
   it('opens spotlight overlay when hotkey is pressed (non-tauri)', async () => {

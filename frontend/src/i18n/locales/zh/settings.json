@@ -1,0 +1,21 @@
+{
+  "eyebrow": "配置",
+  "title": "设置",
+  "subtitle": "管理后端地址、令牌、快捷键与同步偏好。",
+  "backendTitle": "后端",
+  "backendLabel": "后端地址",
+  "backendHint": "FastAPI 根地址，修改后立即生效。",
+  "tokenLabel": "会话令牌",
+  "tokenPlaceholder": "Bearer token 或会话 JWT",
+  "tokenHint": "仅在桌面端本地保存。",
+  "save": "保存",
+  "saved": "已保存",
+  "clearSession": "清除会话",
+  "shortcutsTitle": "快捷键与同步",
+  "shortcutLabel": "Spotlight/Overlay 快捷键",
+  "shortcutHint": "调整桌面全局快捷键以唤起 spotlight。",
+  "autoSyncLabel": "自动同步",
+  "autoSyncHint": "启动或恢复联网时拉取最新版本。",
+  "offlineLabel": "离线缓存",
+  "offlineHint": "缓存已批准的提示词以便离线使用。"
+}

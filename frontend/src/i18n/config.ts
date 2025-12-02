@@ -5,14 +5,20 @@ import enCommon from './locales/en/common.json';
 import enHome from './locales/en/home.json';
 import enNav from './locales/en/nav.json';
 import enPrompts from './locales/en/prompts.json';
+import enSettings from './locales/en/settings.json';
 import enSpotlight from './locales/en/spotlight.json';
 import enWelcome from './locales/en/welcome.json';
+import enWorkspace from './locales/en/workspace.json';
+import enConnect from './locales/en/connect.json';
 import zhCommon from './locales/zh/common.json';
 import zhHome from './locales/zh/home.json';
 import zhNav from './locales/zh/nav.json';
 import zhPrompts from './locales/zh/prompts.json';
+import zhSettings from './locales/zh/settings.json';
 import zhSpotlight from './locales/zh/spotlight.json';
 import zhWelcome from './locales/zh/welcome.json';
+import zhWorkspace from './locales/zh/workspace.json';
+import zhConnect from './locales/zh/connect.json';
 
 export type SupportedLanguage = 'en' | 'zh';
 export const supportedLanguages: SupportedLanguage[] = ['en', 'zh'];
@@ -24,7 +30,10 @@ const resources: Resource = {
     welcome: enWelcome,
     home: enHome,
     prompts: enPrompts,
+    connect: enConnect,
+    settings: enSettings,
     spotlight: enSpotlight,
+    workspace: enWorkspace,
   },
   zh: {
     common: zhCommon,
@@ -32,7 +41,10 @@ const resources: Resource = {
     welcome: zhWelcome,
     home: zhHome,
     prompts: zhPrompts,
+    connect: zhConnect,
+    settings: zhSettings,
     spotlight: zhSpotlight,
+    workspace: zhWorkspace,
   },
 };
 
@@ -45,7 +57,7 @@ if (!i18n.isInitialized) {
       fallbackLng: 'en',
       supportedLngs: supportedLanguages,
       defaultNS: 'common',
-      ns: ['common', 'nav', 'welcome', 'home', 'prompts', 'spotlight'],
+      ns: ['common', 'nav', 'welcome', 'home', 'prompts', 'connect', 'settings', 'spotlight', 'workspace'],
       detection: {
         order: ['localStorage', 'navigator', 'htmlTag'],
         caches: ['localStorage'],

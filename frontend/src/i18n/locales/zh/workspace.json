@@ -1,0 +1,21 @@
+{
+  "title": "提示词工作区",
+  "sidebarTitle": "提示词列表",
+  "searchPlaceholder": "按名称、负责人或标签搜索",
+  "selectedEyebrow": "当前选中",
+  "versionLabel": "版本",
+  "ownerLabel": "负责人",
+  "runSandbox": "测试运行",
+  "approvalCta": "发起审批",
+  "selectedHint": "在右侧起草修改、记录审批备注，准备好后提交审核。",
+  "emptySelection": "从列表中选择一个提示词开始。",
+  "draftTitle": "草稿编辑器",
+  "draftBadge": "本地草稿",
+  "bodyLabel": "提示词正文",
+  "draftPlaceholder": "撰写新版本的提示词，包含变量、说明与元数据。",
+  "notesLabel": "审批备注",
+  "notesPlaceholder": "说明改动点、建议审核人或运行上下文。",
+  "saveDraft": "保存草稿",
+  "historyTitle": "版本记录",
+  "historyHint": "同步、审批与差异"
+}

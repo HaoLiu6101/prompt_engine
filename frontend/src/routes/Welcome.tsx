@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import './welcome.css';
 
 function Welcome() {
   const { t } = useTranslation(['welcome', 'common']);
+  const navigate = useNavigate();
 
   return (
     <div className="welcome">
@@ -12,10 +14,10 @@ function Welcome() {
         <p className="welcome__subtitle">{t('welcome:subtitle')}</p>
 
         <div className="welcome__actions">
-          <button className="button" type="button">
+          <button className="button" type="button" onClick={() => navigate('/workspace')}>
             {t('common:actions.openDesktop')}
           </button>
-          <button className="button secondary" type="button">
+          <button className="button secondary" type="button" onClick={() => navigate('/onboarding')}>
             {t('common:actions.configureBackend')}
           </button>
         </div>

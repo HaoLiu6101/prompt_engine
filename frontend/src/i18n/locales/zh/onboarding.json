@@ -1,0 +1,25 @@
+{
+  "eyebrow": "快速上手",
+  "title": "连接 Prompt Engine 后端",
+  "subtitle": "填写后端地址和令牌，让桌面端可以同步提示词、版本与审批状态。",
+  "backendLabel": "后端地址",
+  "backendHint": "使用 FastAPI 根地址，例如 http://localhost:8000",
+  "tokenLabel": "访问令牌",
+  "tokenPlaceholder": "粘贴个人令牌或会话 JWT",
+  "tokenHint": "仅存储在本地桌面会话。",
+  "shortcutHint": "当前全局快捷键：{{shortcut}}",
+  "configureLater": "打开设置",
+  "continue": "进入工作区",
+  "errors": {
+    "backendRequired": "后端地址不能为空"
+  },
+  "steps": {
+    "title": "你可以做的事",
+    "one": "浏览和搜索已批准的提示词",
+    "two": "起草新版本并发起审批",
+    "three": "为桌面准备离线副本"
+  },
+  "helperTitle": "需要切换后端？",
+  "helperSubtitle": "可以在设置中维护多个配置并随时切换。",
+  "helperBadge": "桌面优先"
+}
