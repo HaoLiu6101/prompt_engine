@@ -85,7 +85,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
         if (mountedRef.current) setIsLoading(false);
       }
     },
-    []
+    [t]
   );
 
   const handleInsert = useCallback(async () => {
@@ -123,7 +123,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
         setIsInserting(false);
       }
     }
-  }, [isInserting, onClose, open, results, selectedItem]);
+  }, [isInserting, onClose, open, results, selectedItem, t]);
 
   useEffect(() => {
     if (open) {
@@ -177,7 +177,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
     } finally {
       setIsSyncing(false);
     }
-  }, [isSyncing, query, runSearch]);
+  }, [isSyncing, query, runSearch, t]);
 
   if (!open) return null;
 

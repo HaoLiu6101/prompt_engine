@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAppConfigStore } from '../stores/useAppConfigStore';
-import { useSessionStore } from '../stores/useSessionStore';
 
 interface RequireConfigProps {
   children: ReactNode;
