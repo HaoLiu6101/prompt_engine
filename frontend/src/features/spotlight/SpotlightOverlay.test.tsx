@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import SpotlightOverlay from './SpotlightOverlay';
 import { copyToClipboard, searchLibrary, type LibraryItem } from '../../services/libraryClient';
+import enSpotlight from '../../i18n/locales/en/spotlight.json';
 
 vi.mock('../../services/libraryClient', () => ({
   searchLibrary: vi.fn(),
@@ -55,13 +56,13 @@ describe('SpotlightOverlay', () => {
     const handleClose = vi.fn();
     render(<SpotlightOverlay open onClose={handleClose} />);
 
-    const input = await screen.findByLabelText('Search library');
+    const input = await screen.findByLabelText(enSpotlight.placeholder);
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
 
     await waitFor(() => expect(mockCopyToClipboard).toHaveBeenCalledWith(mockItems[0].body));
     await waitFor(() => expect(handleClose).toHaveBeenCalled(), { timeout: 750 });
     expect(screen.getByRole('status')).toHaveTextContent(
-      `Copied "${mockItems[0].title}" to clipboard. Paste with Cmd+V.`
+      enSpotlight.copiedMessage.replace('{{title}}', mockItems[0].title)
     );
   });
 });

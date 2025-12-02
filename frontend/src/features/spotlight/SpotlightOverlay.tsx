@@ -6,6 +6,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { copyToClipboard, searchLibrary, syncLibraryFromBackend, type LibraryItem } from '../../services/libraryClient';
 import './spotlight-overlay.css';
 
@@ -22,6 +23,7 @@ type InsertState = {
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
+  const { t } = useTranslation(['spotlight']);
   const inputRef = useRef<HTMLInputElement>(null);
   const mountedRef = useRef(true);
   const searchTokenRef = useRef(0);
@@ -76,7 +78,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
         if (mountedRef.current) {
           setInsertState({
             status: 'error',
-            message: 'Search failed, showing cached results.',
+            message: t('spotlight:searchError'),
           });
         }
       } finally {
@@ -91,7 +93,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
     if (!open || isInserting || !item) return;
 
     setIsInserting(true);
-    setInsertState({ status: 'idle', message: `Copying "${item.title}"…` });
+    setInsertState({ status: 'idle', message: t('spotlight:copyingMessage', { title: item.title }) });
     setShowCopyFlash(true);
     setTimeout(() => {
       if (mountedRef.current) setShowCopyFlash(false);
@@ -102,7 +104,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
       if (mountedRef.current) {
         setInsertState({
           status: 'success',
-          message: `Copied "${item.title}" to clipboard. Paste with Cmd+V.`,
+          message: t('spotlight:copiedMessage', { title: item.title }),
         });
       }
       await sleep(360);
@@ -112,7 +114,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
       if (mountedRef.current) {
         setInsertState({
           status: 'error',
-          message: message || 'Unable to copy. Try again.',
+          message: message || t('spotlight:copyError'),
         });
         setTimeout(() => inputRef.current?.focus(), 50);
       }
@@ -168,10 +170,10 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
     try {
       await syncLibraryFromBackend();
       await runSearch(query);
-      setInsertState({ status: 'success', message: 'Library synced.' });
+      setInsertState({ status: 'success', message: t('spotlight:syncSuccess') });
     } catch (error) {
       console.error('[spotlight] sync failed', error);
-      setInsertState({ status: 'error', message: 'Sync failed. Using cached items.' });
+      setInsertState({ status: 'error', message: t('spotlight:syncError') });
     } finally {
       setIsSyncing(false);
     }
@@ -218,15 +220,13 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
       >
         <header className="spotlight-overlay__header">
           <div>
-            <p className="spotlight-overlay__eyebrow">Prompt Engine</p>
-            <h2 className="spotlight-overlay__title">Spotlight</h2>
-            <p className="spotlight-overlay__hint">
-              Search your library, preview a prompt, then press Enter to copy and close.
-            </p>
+            <p className="spotlight-overlay__eyebrow">{t('spotlight:eyebrow')}</p>
+            <h2 className="spotlight-overlay__title">{t('spotlight:title')}</h2>
+            <p className="spotlight-overlay__hint">{t('spotlight:hint')}</p>
           </div>
           <div className="spotlight-overlay__header-actions">
-            <span className="spotlight-overlay__pill">Local library</span>
-            <button className="spotlight-overlay__close" type="button" onClick={onClose} aria-label="Close">
+            <span className="spotlight-overlay__pill">{t('spotlight:pillLocal')}</span>
+            <button className="spotlight-overlay__close" type="button" onClick={onClose} aria-label={t('spotlight:closeLabel')}>
               Esc
             </button>
           </div>
@@ -237,14 +237,18 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search prompts, snippets, FAQs…"
-              aria-label="Search library"
+              placeholder={t('spotlight:placeholder')}
+              aria-label={t('spotlight:placeholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleInputKeyDown}
               disabled={isInserting}
             />
-            {query ? <span className="spotlight-overlay__badge">Enter to copy</span> : <span className="spotlight-overlay__badge">Showing recent</span>}
+            {query ? (
+              <span className="spotlight-overlay__badge">{t('spotlight:badgeEnter')}</span>
+            ) : (
+              <span className="spotlight-overlay__badge">{t('spotlight:badgeRecent')}</span>
+            )}
           </div>
           <div className="spotlight-overlay__search-actions">
             <button
@@ -253,19 +257,19 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
               onClick={handleSync}
               disabled={isSyncing}
             >
-              {isSyncing ? 'Syncing…' : 'Sync'}
+              {isSyncing ? t('spotlight:syncing') : t('spotlight:sync')}
             </button>
-            <div className="spotlight-overlay__kbd">Cmd+Alt+L</div>
+            <div className="spotlight-overlay__kbd">{t('spotlight:hotkey')}</div>
           </div>
         </div>
 
         <div className="spotlight-overlay__body">
           <div className="spotlight-overlay__results-pane">
-            {isLoading && <div className="spotlight-overlay__loading">Searching…</div>}
+            {isLoading && <div className="spotlight-overlay__loading">{t('spotlight:loading')}</div>}
             {!isLoading && results.length === 0 && (
               <div className="spotlight-overlay__empty">
-                <p className="spotlight-overlay__empty-title">No matches yet</p>
-                <p className="spotlight-overlay__empty-copy">Try another keyword or reset the query.</p>
+                <p className="spotlight-overlay__empty-title">{t('spotlight:emptyTitle')}</p>
+                <p className="spotlight-overlay__empty-copy">{t('spotlight:emptyCopy')}</p>
               </div>
             )}
             {!isLoading && results.length > 0 && (
@@ -307,7 +311,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
               <>
                 <div className="spotlight-overlay__preview-header">
                   <div>
-                    <p className="spotlight-overlay__eyebrow">Preview</p>
+                    <p className="spotlight-overlay__eyebrow">{t('spotlight:previewEyebrow')}</p>
                     <h3 className="spotlight-overlay__preview-title">{selectedItem.title}</h3>
                     <div className="spotlight-overlay__tags">
                       <span className="spotlight-overlay__tag prominent">{selectedItem.item_type}</span>
@@ -319,7 +323,7 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
                     </div>
                   </div>
                   <button className="spotlight-overlay__action" type="button" onClick={handleInsert} disabled={isInserting}>
-                    {isInserting ? 'Copying…' : 'Copy & close'}
+                    {isInserting ? t('spotlight:copying') : t('spotlight:copy')}
                   </button>
                 </div>
                 <div className="spotlight-overlay__preview-body" aria-label="Prompt body">
@@ -338,8 +342,8 @@ function SpotlightOverlay({ open, onClose }: SpotlightOverlayProps) {
               </>
             ) : (
               <div className="spotlight-overlay__empty">
-                <p className="spotlight-overlay__empty-title">Select a result to preview</p>
-                <p className="spotlight-overlay__empty-copy">Enter copies the highlighted item to your clipboard.</p>
+                <p className="spotlight-overlay__empty-title">{t('spotlight:emptyPreviewTitle')}</p>
+                <p className="spotlight-overlay__empty-copy">{t('spotlight:emptyPreviewCopy')}</p>
               </div>
             )}
           </div>

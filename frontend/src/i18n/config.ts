@@ -5,11 +5,13 @@ import enCommon from './locales/en/common.json';
 import enHome from './locales/en/home.json';
 import enNav from './locales/en/nav.json';
 import enPrompts from './locales/en/prompts.json';
+import enSpotlight from './locales/en/spotlight.json';
 import enWelcome from './locales/en/welcome.json';
 import zhCommon from './locales/zh/common.json';
 import zhHome from './locales/zh/home.json';
 import zhNav from './locales/zh/nav.json';
 import zhPrompts from './locales/zh/prompts.json';
+import zhSpotlight from './locales/zh/spotlight.json';
 import zhWelcome from './locales/zh/welcome.json';
 
 export type SupportedLanguage = 'en' | 'zh';
@@ -22,6 +24,7 @@ const resources: Resource = {
     welcome: enWelcome,
     home: enHome,
     prompts: enPrompts,
+    spotlight: enSpotlight,
   },
   zh: {
     common: zhCommon,
@@ -29,6 +32,7 @@ const resources: Resource = {
     welcome: zhWelcome,
     home: zhHome,
     prompts: zhPrompts,
+    spotlight: zhSpotlight,
   },
 };
 
@@ -41,7 +45,7 @@ if (!i18n.isInitialized) {
       fallbackLng: 'en',
       supportedLngs: supportedLanguages,
       defaultNS: 'common',
-      ns: ['common', 'nav', 'welcome', 'home', 'prompts'],
+      ns: ['common', 'nav', 'welcome', 'home', 'prompts', 'spotlight'],
       detection: {
         order: ['localStorage', 'navigator', 'htmlTag'],
         caches: ['localStorage'],

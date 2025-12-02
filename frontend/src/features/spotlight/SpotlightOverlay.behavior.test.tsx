@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import SpotlightOverlay from './SpotlightOverlay';
 import { searchLibrary, copyToClipboard, type LibraryItem } from '../../services/libraryClient';
+import enSpotlight from '../../i18n/locales/en/spotlight.json';
 
 vi.mock('../../services/libraryClient', () => ({
   searchLibrary: vi.fn(),
@@ -45,7 +46,7 @@ describe('SpotlightOverlay interactions', () => {
 
   it('navigates list with arrow keys', async () => {
     render(<SpotlightOverlay open onClose={() => {}} />);
-    const input = await screen.findByLabelText('Search library');
+    const input = await screen.findByLabelText(enSpotlight.placeholder);
 
     fireEvent.keyDown(input, { key: 'ArrowDown' });
     fireEvent.keyDown(input, { key: 'ArrowDown' });
@@ -60,13 +61,13 @@ describe('SpotlightOverlay interactions', () => {
     mockSearch.mockResolvedValueOnce([]);
     render(<SpotlightOverlay open onClose={() => {}} />);
 
-    expect(await screen.findByText('No matches yet')).toBeInTheDocument();
+    expect(await screen.findByText(enSpotlight.emptyTitle)).toBeInTheDocument();
   });
 
   it('closes on Escape', async () => {
     const onClose = vi.fn();
     render(<SpotlightOverlay open onClose={onClose} />);
-    await screen.findByLabelText('Search library');
+    await screen.findByLabelText(enSpotlight.placeholder);
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
 
@@ -77,7 +78,7 @@ describe('SpotlightOverlay interactions', () => {
     const error = new Error('copy failed');
     mockCopy.mockRejectedValueOnce(error);
     render(<SpotlightOverlay open onClose={() => {}} />);
-    const input = await screen.findByLabelText('Search library');
+    const input = await screen.findByLabelText(enSpotlight.placeholder);
 
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
     await waitFor(() => screen.getByRole('alert'));
