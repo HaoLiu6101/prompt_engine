@@ -58,47 +58,7 @@ jobs:
 
       - name: Test summary (coverage + pytest)
         if: always()
-        run: |
-          python - <<'PY'
-          import os
-          import xml.etree.ElementTree as ET
-
-          summaries = []
-
-          if os.path.exists('pytest-report.xml'):
-            report = ET.parse('pytest-report.xml').getroot()
-            total = int(report.attrib.get('tests', 0))
-            failures = int(report.attrib.get('failures', 0))
-            errors = int(report.attrib.get('errors', 0))
-            skipped = int(report.attrib.get('skipped', 0))
-            time = float(report.attrib.get('time', 0.0))
-            passed = total - failures - errors - skipped
-            summaries.append(
-              "## Backend tests\n"
-              "| Total | Passed | Failures | Errors | Skipped | Time (s) |\n"
-              "| --- | --- | --- | --- | --- | --- |\n"
-              f"| {total} | {passed} | {failures} | {errors} | {skipped} | {time:.2f} |"
-            )
-          else:
-            summaries.append("Backend pytest report not found.")
-
-          if os.path.exists('coverage.xml'):
-            coverage_root = ET.parse('coverage.xml').getroot()
-            line_rate = float(coverage_root.attrib.get('line-rate', 0.0)) * 100
-            branch_rate = float(coverage_root.attrib.get('branch-rate', 0.0)) * 100
-            summaries.append(
-              "## Backend coverage\n"
-              "| Metric | % |\n"
-              "| --- | --- |\n"
-              f"| Lines | {line_rate:.1f}% |\n"
-              f"| Branches | {branch_rate:.1f}% |"
-            )
-          else:
-            summaries.append("Backend coverage.xml not found.")
-
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary_file:
-            summary_file.write("\n".join(summaries) + "\n")
-          PY
+        run: python ../tools/ci/backend_summary.py --summary-path "$GITHUB_STEP_SUMMARY"
 
       - name: Upload coverage artifact
         if: always()
