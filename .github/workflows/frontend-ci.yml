@@ -34,6 +34,29 @@ jobs:
         env:
           CI: true
 
+      - name: Test summary (coverage)
+        if: always()
+        run: |
+          if [ ! -f coverage/coverage-summary.json ]; then
+            echo "Frontend coverage summary not found." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          node - <<'NODE'
+          const fs = require('fs');
+          const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8')).total;
+          const metrics = [
+            ['Lines', summary.lines?.pct],
+            ['Statements', summary.statements?.pct],
+            ['Branches', summary.branches?.pct],
+            ['Functions', summary.functions?.pct],
+          ];
+          const rows = metrics
+            .map(([label, pct]) => `| ${label} | ${pct ?? 'n/a'}% |`)
+            .join('\n');
+          const table = `## Frontend coverage\n| Metric | % |\n| --- | --- |\n${rows}\n`;
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, table);
+          NODE
+
       - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
