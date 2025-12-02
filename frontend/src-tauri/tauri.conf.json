@@ -27,7 +27,8 @@
     "bundle": {
       "identifier": "com.example.promptengine",
       "active": true,
-      "targets": ["dmg", "msi"]
+      "targets": ["dmg", "msi"],
+      "icon": ["icons/icon.png", "icons/icon.ico"]
     },
     "windows": [
       {
