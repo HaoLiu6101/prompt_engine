@@ -23,18 +23,20 @@ jobs:
       - name: Sync app version with tag
         shell: bash
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Tag $TAG is not a semver string (expected X.Y.Z)" >&2
+          RAW_TAG="${GITHUB_REF_NAME}"
+          VERSION="${RAW_TAG#v}"
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag $RAW_TAG is not a semver string (expected vX.Y.Z or X.Y.Z)" >&2
             exit 1
           fi
-          export TAG
+          export VERSION
 
           node - <<'NODE'
           const fs = require('fs');
           const path = require('path');
 
-          const version = process.env.TAG || process.env.GITHUB_REF_NAME;
+          const version = process.env.VERSION || process.env.GITHUB_REF_NAME;
           if (!version) {
             throw new Error('Tag name missing');
           }
