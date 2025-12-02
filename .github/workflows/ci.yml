@@ -34,9 +34,15 @@ jobs:
         with:
           workspaces: frontend/src-tauri -> target
 
-      - name: Install WiX Toolset (MSI bundling)
+      - name: Ensure WiX Toolset (MSI bundling)
         if: matrix.os == 'windows-latest'
-        run: choco install wixtoolset --version 3.14.0.6526 --yes --no-progress
+        run: |
+          $wix = Get-Command candle.exe -ErrorAction SilentlyContinue
+          if (-not $wix) {
+            choco install wixtoolset --yes --no-progress
+          } else {
+            Write-Host "WiX already installed"
+          }
 
       - name: Install dependencies
         working-directory: frontend
