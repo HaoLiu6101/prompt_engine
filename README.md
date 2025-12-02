@@ -1,9 +1,9 @@
 # Prompt Engine
 
-Internal platform for authoring, approving, and consuming reusable prompts. Current status: desktop spotlight prototype (React + Vite + Tauri/Rust with a local SQLite library and global shortcut on macOS), architecture/data model specs, backend not yet implemented.
+Internal platform for authoring, approving, and consuming reusable prompts. Current status: desktop spotlight prototype (React + Vite + Tauri/Rust with a local SQLite library and platform shortcuts), architecture/data model specs, backend not yet implemented.
 
 ## Structure
-- `frontend/`: React + TypeScript + Vite desktop app with a Tauri host in `src-tauri/` (Rust). The host seeds and queries a local SQLite library, exposes IPC commands, and registers a macOS global shortcut for the Spotlight window.
+- `frontend/`: React + TypeScript + Vite desktop app with a Tauri host in `src-tauri/` (Rust). The host seeds and queries a local SQLite library, exposes IPC commands, and registers a global shortcut for the Spotlight window (macOS: Cmd+Option+L, Windows: Ctrl+Alt+L).
 - `specs/`: Architecture, data models, and placeholders for API/flows.
 - `backend/`: Empty placeholder for FastAPI backend.
 
@@ -19,8 +19,15 @@ npm run dev
 ```
 Then open the shown URL (defaults to `http://localhost:5173`) or use the spawned desktop window. The default route is a Welcome screen; additional routes: `/home`, `/prompts`.
 
+Windows build prerequisites:
+- Rust toolchain `x86_64-pc-windows-msvc`
+- Visual Studio Build Tools with the C++ workload (needed for bundled SQLite via `rusqlite`)
+- Node.js 18+
+- WebView2 runtime (preinstalled on GitHub runners; install manually if missing)
+- Build: `cd frontend && npm install && npm run tauri build`
+
 Spotlight:
-- Press `Cmd+Option+L` (macOS) to open the Spotlight window, centered on the monitor under the cursor. If the dedicated Tauri window is unavailable, the inline overlay opens instead.
+- Press `Cmd+Option+L` (macOS) or `Ctrl+Alt+L` (Windows) to open the Spotlight window, centered on the monitor under the cursor. If the dedicated Tauri window is unavailable, the inline overlay opens instead.
 - Type to search the local library (SQLite via Rust IPC `search_library`), merged with in-memory fallback data so web mode still works.
 - Navigate results with Arrow keys or click; Esc closes. Dev builds auto-open devtools for the spotlight window.
 - Press `Enter` or use "Copy & close" to copy the selected prompt/snippet; clipboard uses Tauri in desktop mode and the browser Clipboard API on the web.

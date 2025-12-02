@@ -27,7 +27,7 @@
     "bundle": {
       "identifier": "com.example.promptengine",
       "active": true,
-      "targets": ["app", "dmg"]
+      "targets": ["dmg", "msi"]
     },
     "windows": [
       {

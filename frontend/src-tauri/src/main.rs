@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{io, process::Command};
+use std::io;
+#[cfg(target_os = "macos")]
+use std::process::Command;
 use tauri::{window::WindowBuilder, GlobalShortcutManager, Manager};
 
 mod library;
@@ -233,7 +235,10 @@ fn position_spotlight_on_cursor(window: &tauri::Window) {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn position_spotlight_on_cursor(_window: &tauri::Window) {}
+fn position_spotlight_on_cursor(window: &tauri::Window) {
+    // Best effort centering for non-macOS platforms.
+    let _ = window.center();
+}
 
 #[tauri::command]
 fn reposition_spotlight(app: tauri::AppHandle) -> Result<(), String> {
@@ -289,6 +294,23 @@ fn main() {
                 let mut shortcuts = app.global_shortcut_manager();
                 shortcuts
                     .register("Command+Option+L", move || {
+                        if let Some(window) = handle.get_window("spotlight") {
+                            position_spotlight_on_cursor(&window);
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                            let _ = window.emit("show-spotlight", ());
+                        }
+                    })
+                    .map_err(|e| e)?;
+            }
+
+            // Global shortcut: Ctrl+Alt+L on Windows to mirror the macOS chord.
+            #[cfg(target_os = "windows")]
+            {
+                let handle = app.handle();
+                let mut shortcuts = app.global_shortcut_manager();
+                shortcuts
+                    .register("Ctrl+Alt+L", move || {
                         if let Some(window) = handle.get_window("spotlight") {
                             position_spotlight_on_cursor(&window);
                             let _ = window.show();

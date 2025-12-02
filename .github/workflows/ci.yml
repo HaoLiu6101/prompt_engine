@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: frontend/src-tauri -> target
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build web assets
+        working-directory: frontend
+        run: npm run build
+
+      - name: Build Tauri app
+        working-directory: frontend
+        run: npm run tauri build
+
+      - name: Upload macOS installer
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-engine-macos-dmg
+          path: frontend/src-tauri/target/release/bundle/dmg/*.dmg
+
+      - name: Upload Windows installer
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-engine-windows-msi
+          path: frontend/src-tauri/target/release/bundle/msi/*.msi
