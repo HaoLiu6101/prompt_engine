@@ -1,22 +1,23 @@
+import { useTranslation } from 'react-i18next';
 import PromptListPreview from '../features/prompts/PromptListPreview';
 import './home.css';
 
 function Home() {
+  const { t } = useTranslation(['home', 'common']);
+
   return (
     <div className="stack">
       <section className="hero card">
         <div className="stack">
-          <p className="eyebrow">Internal tooling</p>
-          <h1>Prompt Engine</h1>
-          <p className="text-muted">
-            Manage reusable prompts with approvals, ownership, and analytics. Desktop-first, ready for Codex and MCP integrations.
-          </p>
+          <p className="eyebrow">{t('home:eyebrow')}</p>
+          <h1>{t('home:title')}</h1>
+          <p className="text-muted">{t('home:subtitle')}</p>
           <div className="row">
             <button className="button" type="button">
-              Open prompt workspace
+              {t('common:actions.openWorkspace')}
             </button>
             <button className="button secondary" type="button">
-              Configure backend
+              {t('common:actions.configureBackend')}
             </button>
           </div>
         </div>
@@ -25,10 +26,10 @@ function Home() {
       <section className="card">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div className="stack" style={{ flex: 1 }}>
-            <h2>Recent prompts</h2>
-            <p className="text-muted">Synced from backend once API wiring lands.</p>
+            <h2>{t('home:recentTitle')}</h2>
+            <p className="text-muted">{t('home:recentSubtitle')}</p>
           </div>
-          <div className="text-muted" style={{ fontSize: 14 }}>Offline cache coming soon</div>
+          <div className="text-muted" style={{ fontSize: 14 }}>{t('common:badges.offlineSoon')}</div>
         </div>
         <PromptListPreview />
       </section>

@@ -1,0 +1,15 @@
+{
+  "appName": "Prompt Engine",
+  "language": "语言",
+  "platformMac": "平台：macOS",
+  "buildDev": "构建：开发预览",
+  "actions": {
+    "openDesktop": "打开桌面客户端",
+    "configureBackend": "配置后端",
+    "openWorkspace": "打开提示词工作区",
+    "newPrompt": "新建提示词"
+  },
+  "badges": {
+    "offlineSoon": "离线缓存即将上线"
+  }
+}

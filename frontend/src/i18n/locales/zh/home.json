@@ -1,0 +1,7 @@
+{
+  "eyebrow": "内部工具",
+  "title": "Prompt Engine",
+  "subtitle": "以桌面为先，提供提示词审批、归属和分析，并已准备好对接 Codex 与 MCP。",
+  "recentTitle": "最近的提示词",
+  "recentSubtitle": "API 接入后将从后端同步。"
+}

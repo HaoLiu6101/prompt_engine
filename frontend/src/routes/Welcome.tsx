@@ -1,27 +1,28 @@
+import { useTranslation } from 'react-i18next';
 import './welcome.css';
 
 function Welcome() {
+  const { t } = useTranslation(['welcome', 'common']);
+
   return (
     <div className="welcome">
       <div className="welcome__glass">
-        <p className="welcome__eyebrow">Prompt Engine</p>
-        <h1 className="welcome__title">Welcome</h1>
-        <p className="welcome__subtitle">
-          Start the desktop client, connect to backend, and jump into your prompt library.
-        </p>
+        <p className="welcome__eyebrow">{t('welcome:eyebrow')}</p>
+        <h1 className="welcome__title">{t('welcome:title')}</h1>
+        <p className="welcome__subtitle">{t('welcome:subtitle')}</p>
 
         <div className="welcome__actions">
           <button className="button" type="button">
-            Open desktop client
+            {t('common:actions.openDesktop')}
           </button>
           <button className="button secondary" type="button">
-            Configure backend
+            {t('common:actions.configureBackend')}
           </button>
         </div>
 
         <div className="welcome__meta">
-          <span>Platform: macOS</span>
-          <span>Build: dev preview</span>
+          <span>{t('common:platformMac')}</span>
+          <span>{t('common:buildDev')}</span>
         </div>
       </div>
     </div>

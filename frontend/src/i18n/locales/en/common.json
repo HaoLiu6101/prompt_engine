@@ -1,0 +1,15 @@
+{
+  "appName": "Prompt Engine",
+  "language": "Language",
+  "platformMac": "Platform: macOS",
+  "buildDev": "Build: dev preview",
+  "actions": {
+    "openDesktop": "Open desktop client",
+    "configureBackend": "Configure backend",
+    "openWorkspace": "Open prompt workspace",
+    "newPrompt": "New prompt"
+  },
+  "badges": {
+    "offlineSoon": "Offline cache coming soon"
+  }
+}

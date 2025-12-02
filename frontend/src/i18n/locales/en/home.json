@@ -1,0 +1,7 @@
+{
+  "eyebrow": "Internal tooling",
+  "title": "Prompt Engine",
+  "subtitle": "Manage reusable prompts with approvals, ownership, and analytics. Desktop-first, ready for Codex and MCP integrations.",
+  "recentTitle": "Recent prompts",
+  "recentSubtitle": "Synced from backend once API wiring lands."
+}

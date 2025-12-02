@@ -24,6 +24,12 @@
   align-items: center;
 }
 
+.nav-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .nav-links a {
   color: #334155;
   text-decoration: none;

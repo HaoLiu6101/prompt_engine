@@ -15,8 +15,11 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.5.3",
+    "i18next": "^23.11.5",
+    "i18next-browser-languagedetector": "^7.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-i18next": "^15.1.0",
     "react-router-dom": "^6.27.0",
     "zustand": "^4.5.2"
   },
